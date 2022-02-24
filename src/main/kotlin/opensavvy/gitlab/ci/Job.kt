@@ -15,7 +15,8 @@ class Job(
 	internal var beforeScript = ArrayList<Command>()
 	internal var afterScript = ArrayList<Command>()
 	internal var allowFailure: ConditionalFailure = ConditionalFailure.Always(false)
-	internal var artifact = Artifact()
+	internal val artifact = Artifact()
+	internal val cache = ArrayList<Cache>()
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -37,6 +38,11 @@ class Job(
 				Yaml.Collection.ListLiteral(afterScript.map { it.toYaml() })
 
 		elements[Yaml.Scalar.StringLiteral("artifacts")] = artifact.toYaml()
+
+		if (cache.isNotEmpty())
+			elements[Yaml.Scalar.StringLiteral("cache")] = Yaml.Collection.ListLiteral(
+				cache.map { it.toYaml() }
+			)
 
 		return Yaml.Collection.MapLiteral(elements)
 	}

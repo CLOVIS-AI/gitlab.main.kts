@@ -39,6 +39,7 @@ class Artifact : YamlExport {
 			elements[Yaml.Scalar.StringLiteral("reports")] = reports.toYaml()
 
 		elements[Yaml.Scalar.StringLiteral("when")] = Yaml.Scalar.StringLiteral(only)
+		elements[Yaml.Scalar.StringLiteral("untracked")] = Yaml.Scalar.BooleanLiteral(includeUntracked)
 
 		return Yaml.Collection.MapLiteral(elements)
 	}
