@@ -22,6 +22,8 @@ class Job(
 	internal var coverage: String? = null
 	internal val dependencies = ArrayList<Job>()
 	internal var needs: ArrayList<Job>? = null
+	internal var image: ContainerImage? = null
+	internal var services = ArrayList<ContainerService>()
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -52,6 +54,12 @@ class Job(
 
 		if (needs?.isNotEmpty() == true)
 			elements[yaml("needs")] = yaml(needs!!.map { yaml(it.name) } + dependencies.map { yaml(it.name) })
+
+		if (image != null)
+			elements[yaml("image")] = image!!.toYaml()
+
+		if (services.isNotEmpty())
+			elements[yaml("services")] = yaml(services.map { it.toYaml() })
 
 		return yaml(elements)
 	}
