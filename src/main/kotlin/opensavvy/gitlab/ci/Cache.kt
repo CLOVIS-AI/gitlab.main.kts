@@ -1,6 +1,7 @@
 package opensavvy.gitlab.ci
 
 import opensavvy.gitlab.ci.yaml.Yaml
+import opensavvy.gitlab.ci.yaml.yaml
 
 class Cache : YamlExport {
 	internal var key: String? = null
@@ -16,30 +17,30 @@ class Cache : YamlExport {
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
 
-		elements[Yaml.Scalar.StringLiteral("key")] = when {
-			keyFiles.isNotEmpty() -> Yaml.Collection.MapLiteral(
-				Yaml.Scalar.StringLiteral("files") to Yaml.Collection.ListLiteral(
-					keyFiles.map { Yaml.Scalar.StringLiteral(it) }
+		elements[yaml("key")] = when {
+			keyFiles.isNotEmpty() -> yaml(
+				yaml("files") to yaml(
+					keyFiles.map { yaml(it) }
 				),
 			).let {
 				if (keyPrefix != null)
-					Yaml.Collection.MapLiteral(
-						it.contents + (Yaml.Scalar.StringLiteral("prefix") to Yaml.Scalar.StringLiteral(keyPrefix!!)),
+					yaml(
+						it.contents + (yaml("prefix") to yaml(keyPrefix!!)),
 					)
 				else
 					it
 			}
-			else -> Yaml.Scalar.StringLiteral(key ?: "default")
+			else -> yaml(key ?: "default")
 		}
 
-		if (includePaths.isNotEmpty()) elements[Yaml.Scalar.StringLiteral("paths")] =
-			Yaml.Collection.ListLiteral(includePaths.map { Yaml.Scalar.StringLiteral(it) })
+		if (includePaths.isNotEmpty()) elements[yaml("paths")] =
+			yaml(includePaths.map { yaml(it) })
 
-		elements[Yaml.Scalar.StringLiteral("when")] = Yaml.Scalar.StringLiteral(only)
-		elements[Yaml.Scalar.StringLiteral("policy")] = Yaml.Scalar.StringLiteral(policy)
-		elements[Yaml.Scalar.StringLiteral("untracked")] = Yaml.Scalar.BooleanLiteral(includeUntracked)
+		elements[yaml("when")] = yaml(only)
+		elements[yaml("policy")] = yaml(policy)
+		elements[yaml("untracked")] = yaml(includeUntracked)
 
-		return Yaml.Collection.MapLiteral(elements)
+		return yaml(elements)
 	}
 }
 

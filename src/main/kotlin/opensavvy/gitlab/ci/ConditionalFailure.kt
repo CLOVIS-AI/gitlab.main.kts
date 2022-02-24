@@ -1,16 +1,16 @@
 package opensavvy.gitlab.ci
 
-import opensavvy.gitlab.ci.yaml.Yaml
+import opensavvy.gitlab.ci.yaml.yaml
 
 sealed class ConditionalFailure : YamlExport {
 	data class Always(val allow: Boolean) : ConditionalFailure() {
-		override fun toYaml() = Yaml.Scalar.BooleanLiteral(allow)
+		override fun toYaml() = yaml(allow)
 	}
 
 	data class AllowWhenExitCode(val allowedCodes: Set<UByte>) : ConditionalFailure() {
-		override fun toYaml() = Yaml.Collection.MapLiteral(
-			Yaml.Scalar.StringLiteral("exit_codes") to Yaml.Collection.ListLiteral(
-				allowedCodes.map { Yaml.Scalar.IntegerLiteral(it.toLong()) }
+		override fun toYaml() = yaml(
+			yaml("exit_codes") to yaml(
+				allowedCodes.map { yaml(it.toLong()) }
 			)
 		)
 	}

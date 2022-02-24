@@ -1,6 +1,7 @@
 package opensavvy.gitlab.ci
 
 import opensavvy.gitlab.ci.yaml.Yaml
+import opensavvy.gitlab.ci.yaml.yaml
 import java.io.File
 
 class Artifact : YamlExport {
@@ -17,31 +18,27 @@ class Artifact : YamlExport {
 		val elements = HashMap<Yaml, Yaml>()
 
 		if (includedPaths.isNotEmpty())
-			elements[Yaml.Scalar.StringLiteral("paths")] = Yaml.Collection.ListLiteral(
-				includedPaths.map { Yaml.Scalar.StringLiteral(it) }
-			)
+			elements[yaml("paths")] = yaml(includedPaths.map { yaml(it) })
 
 		if (excludedPaths.isNotEmpty())
-			elements[Yaml.Scalar.StringLiteral("exclude")] = Yaml.Collection.ListLiteral(
-				excludedPaths.map { Yaml.Scalar.StringLiteral(it) }
-			)
+			elements[yaml("exclude")] = yaml(excludedPaths.map { yaml(it) })
 
 		if (expireIn != null)
-			elements[Yaml.Scalar.StringLiteral("expire_in")] = Yaml.Scalar.StringLiteral(expireIn!!)
+			elements[yaml("expire_in")] = yaml(expireIn!!)
 
 		if (exposeAs != null)
-			elements[Yaml.Scalar.StringLiteral("expose_as")] = Yaml.Scalar.StringLiteral(exposeAs!!)
+			elements[yaml("expose_as")] = yaml(exposeAs!!)
 
 		if (name != null)
-			elements[Yaml.Scalar.StringLiteral("name")] = Yaml.Scalar.StringLiteral(name!!)
+			elements[yaml("name")] = yaml(name!!)
 
 		if (!reports.isEmpty)
-			elements[Yaml.Scalar.StringLiteral("reports")] = reports.toYaml()
+			elements[yaml("reports")] = reports.toYaml()
 
-		elements[Yaml.Scalar.StringLiteral("when")] = Yaml.Scalar.StringLiteral(only)
-		elements[Yaml.Scalar.StringLiteral("untracked")] = Yaml.Scalar.BooleanLiteral(includeUntracked)
+		elements[yaml("when")] = yaml(only)
+		elements[yaml("untracked")] = yaml(includeUntracked)
 
-		return Yaml.Collection.MapLiteral(elements)
+		return yaml(elements)
 	}
 }
 

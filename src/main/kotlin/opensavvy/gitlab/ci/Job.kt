@@ -4,6 +4,7 @@ import opensavvy.gitlab.ci.script.Command
 import opensavvy.gitlab.ci.script.CommandDsl
 import opensavvy.gitlab.ci.utils.generateReadOnlyDelegateProvider
 import opensavvy.gitlab.ci.yaml.Yaml
+import opensavvy.gitlab.ci.yaml.yaml
 
 class Job(
 	var name: String,
@@ -22,29 +23,27 @@ class Job(
 		val elements = HashMap<Yaml, Yaml>()
 
 		if (stage != null)
-			elements[Yaml.Scalar.StringLiteral("stage")] = Yaml.Scalar.StringLiteral(stage!!.name)
+			elements[yaml("stage")] = yaml(stage!!.name)
 
-		elements[Yaml.Scalar.StringLiteral("allow_failure")] = allowFailure.toYaml()
+		elements[yaml("allow_failure")] = allowFailure.toYaml()
 
 		if (script.isNotEmpty())
-			elements[Yaml.Scalar.StringLiteral("script")] = Yaml.Collection.ListLiteral(script.map { it.toYaml() })
+			elements[yaml("script")] = yaml(script.map { it.toYaml() })
 
 		if (beforeScript.isNotEmpty())
-			elements[Yaml.Scalar.StringLiteral("before_script")] =
-				Yaml.Collection.ListLiteral(beforeScript.map { it.toYaml() })
+			elements[yaml("before_script")] =
+				yaml(beforeScript.map { it.toYaml() })
 
 		if (afterScript.isNotEmpty())
-			elements[Yaml.Scalar.StringLiteral("after_script")] =
-				Yaml.Collection.ListLiteral(afterScript.map { it.toYaml() })
+			elements[yaml("after_script")] =
+				yaml(afterScript.map { it.toYaml() })
 
-		elements[Yaml.Scalar.StringLiteral("artifacts")] = artifact.toYaml()
+		elements[yaml("artifacts")] = artifact.toYaml()
 
 		if (cache.isNotEmpty())
-			elements[Yaml.Scalar.StringLiteral("cache")] = Yaml.Collection.ListLiteral(
-				cache.map { it.toYaml() }
-			)
+			elements[yaml("cache")] = yaml(cache.map { it.toYaml() })
 
-		return Yaml.Collection.MapLiteral(elements)
+		return yaml(elements)
 	}
 }
 

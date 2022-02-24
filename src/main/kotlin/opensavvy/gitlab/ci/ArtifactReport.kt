@@ -1,12 +1,13 @@
 package opensavvy.gitlab.ci
 
 import opensavvy.gitlab.ci.yaml.Yaml
+import opensavvy.gitlab.ci.yaml.yaml
 
 class ArtifactReport : YamlExport {
 	private var reports = HashMap<String, Yaml>()
 
-	override fun toYaml() = Yaml.Collection.MapLiteral(
-		reports.mapKeys { (key, _) -> Yaml.Scalar.StringLiteral(key) }
+	override fun toYaml() = yaml(
+		reports.mapKeys { (key, _) -> yaml(key) }
 	)
 
 	internal val isEmpty get() = reports.isEmpty()
