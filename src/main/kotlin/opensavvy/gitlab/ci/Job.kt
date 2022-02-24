@@ -24,6 +24,7 @@ class Job(
 	internal var needs: ArrayList<Job>? = null
 	internal var image: ContainerImage? = null
 	internal var services = ArrayList<ContainerService>()
+	internal val tags = ArrayList<String>()
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -61,6 +62,9 @@ class Job(
 		if (services.isNotEmpty())
 			elements[yaml("services")] = yaml(services.map { it.toYaml() })
 
+		if (tags.isNotEmpty())
+			elements[yaml("tags")] = yaml(tags.map { yaml(it) })
+
 		return yaml(elements)
 	}
 }
@@ -70,6 +74,10 @@ fun Job.beforeScript(block: CommandDsl.() -> Unit) = CommandDsl(beforeScript).bl
 fun Job.afterScript(block: CommandDsl.() -> Unit) = CommandDsl(afterScript).block()
 fun Job.coverage(@Language("RegExp") coveragePercentage: String) {
 	coverage = coveragePercentage
+}
+
+fun Job.tag(name: String) {
+	tags += name
 }
 
 fun Job.downloadArtifactsFrom(parentJob: Job) {
