@@ -60,12 +60,11 @@ sealed class Yaml {
 			override fun toYamlString(indentation: Int): CharSequence {
 				val builder = StringBuilder()
 
-				builder += "\n"
 				for (child in children) {
+					builder += "\n"
 					builder indent indentation
 					builder += "- "
 					builder += child.toYamlString(indentation + 1)
-					builder += "\n"
 				}
 
 				return builder
