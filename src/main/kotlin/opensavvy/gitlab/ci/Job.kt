@@ -5,6 +5,7 @@ import opensavvy.gitlab.ci.script.CommandDsl
 import opensavvy.gitlab.ci.utils.generateReadOnlyDelegateProvider
 import opensavvy.gitlab.ci.yaml.Yaml
 import opensavvy.gitlab.ci.yaml.yaml
+import org.intellij.lang.annotations.Language
 
 class Job(
 	var name: String,
@@ -18,6 +19,7 @@ class Job(
 	internal var allowFailure: ConditionalFailure = ConditionalFailure.Always(false)
 	internal val artifact = Artifact()
 	internal val cache = ArrayList<Cache>()
+	internal var coverage: String? = null
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -50,6 +52,9 @@ class Job(
 fun Job.script(block: CommandDsl.() -> Unit) = CommandDsl(script).block()
 fun Job.beforeScript(block: CommandDsl.() -> Unit) = CommandDsl(beforeScript).block()
 fun Job.afterScript(block: CommandDsl.() -> Unit) = CommandDsl(afterScript).block()
+fun Job.coverage(@Language("RegExp") coveragePercentage: String) {
+	coverage = coveragePercentage
+}
 
 fun GitLabCi.job(name: String, block: Job.() -> Unit) = Job(name)
 	.apply(block)
