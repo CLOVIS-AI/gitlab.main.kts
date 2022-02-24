@@ -20,6 +20,8 @@ class Job(
 	internal val artifact = Artifact()
 	internal val cache = ArrayList<Cache>()
 	internal var coverage: String? = null
+	internal val dependencies = ArrayList<Job>()
+	internal var needs: ArrayList<Job>? = null
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -45,6 +47,12 @@ class Job(
 		if (cache.isNotEmpty())
 			elements[yaml("cache")] = yaml(cache.map { it.toYaml() })
 
+		if (dependencies.isNotEmpty())
+			elements[yaml("dependencies")] = yaml(dependencies.map { yaml(it.name) })
+
+		if (needs?.isNotEmpty() == true)
+			elements[yaml("needs")] = yaml(needs!!.map { yaml(it.name) } + dependencies.map { yaml(it.name) })
+
 		return yaml(elements)
 	}
 }
@@ -54,6 +62,17 @@ fun Job.beforeScript(block: CommandDsl.() -> Unit) = CommandDsl(beforeScript).bl
 fun Job.afterScript(block: CommandDsl.() -> Unit) = CommandDsl(afterScript).block()
 fun Job.coverage(@Language("RegExp") coveragePercentage: String) {
 	coverage = coveragePercentage
+}
+
+fun Job.downloadArtifactsFrom(parentJob: Job) {
+	dependencies += parentJob
+}
+
+fun Job.waitFor(previousJob: Job) {
+	if (needs == null)
+		needs = ArrayList<Job>().apply { this += previousJob }
+	else
+		needs!! += previousJob
 }
 
 fun GitLabCi.job(name: String, block: Job.() -> Unit) = Job(name)
