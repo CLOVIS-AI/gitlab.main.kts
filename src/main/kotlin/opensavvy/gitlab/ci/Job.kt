@@ -49,11 +49,11 @@ class Job(
 	internal var allowFailure: ConditionalFailure = ConditionalFailure.Always(false)
 	internal val artifact = Artifact()
 	internal val cache = ArrayList<Cache>()
-	internal val dependencies = ArrayList<Job>()
-	internal var needs: ArrayList<Job>? = null
+	internal val dependencies = HashSet<Job>()
+	internal var needs: HashSet<Job>? = null
 	internal var image: ContainerImage? = null
-	internal var services = ArrayList<ContainerService>()
-	internal val tags = ArrayList<String>()
+	internal var services = HashSet<ContainerService>()
+	internal val tags = HashSet<String>()
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -179,7 +179,7 @@ fun Job.downloadArtifactsFrom(parentJob: Job) {
  */
 fun Job.waitFor(previousJob: Job) {
 	if (needs == null)
-		needs = ArrayList<Job>().apply { this += previousJob }
+		needs = HashSet<Job>().apply { this += previousJob }
 	else
 		needs!! += previousJob
 }
@@ -210,7 +210,7 @@ fun Job.waitFor(previousJob: Job) {
  * @see waitFor
  */
 fun Job.waitForNoOne() {
-	needs = ArrayList()
+	needs = HashSet()
 }
 
 fun GitLabCi.job(name: String, block: Job.() -> Unit) = Job(name)
