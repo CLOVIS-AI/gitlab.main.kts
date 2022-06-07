@@ -67,6 +67,10 @@ sealed class Yaml {
 					builder += child.toYamlString(indentation + 1)
 				}
 
+				if (children.isEmpty()) {
+					builder += "[]"
+				}
+
 				return builder
 			}
 		}
