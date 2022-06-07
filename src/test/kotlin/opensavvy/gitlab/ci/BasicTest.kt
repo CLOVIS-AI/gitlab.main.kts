@@ -21,6 +21,7 @@ class BasicTest {
 				stage = docker
 				useDockerInDocker()
 				useGitLabRegistry()
+				waitForNoOne()
 
 				script {
 					dockerBuildAndPush(
