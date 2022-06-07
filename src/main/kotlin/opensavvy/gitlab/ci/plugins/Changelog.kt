@@ -1,6 +1,7 @@
-package opensavvy.gitlab.ci.script
+package opensavvy.gitlab.ci.plugins
 
 import opensavvy.gitlab.ci.*
+import opensavvy.gitlab.ci.script.shell
 
 fun Job.publishChangelogToTelegram() {
 	image("registry.gitlab.com/clovis-ai/dotfiles:latest")

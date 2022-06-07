@@ -1,6 +1,9 @@
 package opensavvy.gitlab.ci
 
-import opensavvy.gitlab.ci.script.*
+import opensavvy.gitlab.ci.plugins.buildDockerfile
+import opensavvy.gitlab.ci.plugins.publishChangelogToDiscord
+import opensavvy.gitlab.ci.plugins.publishChangelogToTelegram
+import opensavvy.gitlab.ci.plugins.publishDocker
 import kotlin.test.Test
 
 class BasicTest {
@@ -16,28 +19,15 @@ class BasicTest {
 
 			val dockerJsChrome by job {
 				stage = docker
-				useDocker()
-				useContainerRegistry()
-				waitForNoOne()
 
-				script {
-					dockerBuildAndPush(
-						jsChromeImage,
-						"client/build.dockerfile",
-						"client"
-					)
-				}
+				buildDockerfile("client/Dockerfile", jsChromeImage, "client")
 			}
 
 			val dockerJsChromeLatest by job {
 				stage = deploy
-				useDocker()
-				useContainerRegistry()
 				waitFor(dockerJsChrome)
 
-				script {
-					dockerRename(jsChromeImage)
-				}
+				publishDocker(jsChromeImage, "latest")
 			}
 
 			val telegram by job {
