@@ -1,9 +1,6 @@
 package opensavvy.gitlab.ci
 
-import opensavvy.gitlab.ci.script.dockerBuildAndPush
-import opensavvy.gitlab.ci.script.dockerRename
-import opensavvy.gitlab.ci.script.useDockerInDocker
-import opensavvy.gitlab.ci.script.useGitLabRegistry
+import opensavvy.gitlab.ci.script.*
 import kotlin.test.Test
 
 class BasicTest {
@@ -12,15 +9,15 @@ class BasicTest {
 	fun basicTest() {
 		@Suppress("UNUSED_VARIABLE")
 		gitlabCi {
-			val jsChromeImage = "\$CI_REGISTRY_IMAGE/js-chrome"
+			val jsChromeImage = "${Variables.Registry.image}/js-chrome"
 
 			val docker by stage()
 			val deploy by stage()
 
 			val dockerJsChrome by job {
 				stage = docker
-				useDockerInDocker()
-				useGitLabRegistry()
+				useDocker()
+				useContainerRegistry()
 				waitForNoOne()
 
 				script {
@@ -34,8 +31,8 @@ class BasicTest {
 
 			val dockerJsChromeLatest by job {
 				stage = deploy
-				useDockerInDocker()
-				useGitLabRegistry()
+				useDocker()
+				useContainerRegistry()
 				waitFor(dockerJsChrome)
 
 				script {

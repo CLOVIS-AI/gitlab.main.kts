@@ -2,13 +2,15 @@ package opensavvy.gitlab.ci.script
 
 import opensavvy.gitlab.ci.*
 
-fun Job.useDockerInDocker() {
+fun Job.useDocker() {
 	image("docker:19.03")
 	service("docker:dind")
 	tag("docker")
 }
 
-fun Job.useGitLabRegistry() {
+fun Job.useContainerRegistry() {
+	useDocker()
+
 	beforeScript {
 		dockerLogInToGitLabRegistry()
 	}
@@ -19,7 +21,7 @@ fun CommandDsl.dockerLogIn(username: String, password: String, registry: String)
 }
 
 fun CommandDsl.dockerLogInToGitLabRegistry() {
-	dockerLogIn("gitlab-ci-token", "\$CI_JOB_TOKEN", "\$CI_REGISTRY")
+	dockerLogIn(Variables.Registry.username, Variables.Registry.password, Variables.Registry.server)
 }
 
 fun CommandDsl.dockerPull(image: String, allowFailure: Boolean = false) {
@@ -48,7 +50,7 @@ fun CommandDsl.dockerPush(image: String) {
 
 fun CommandDsl.dockerBuildAndPush(imageName: String, dockerfile: String = "Dockerfile", context: String = ".") {
 	val latest = "$imageName:latest"
-	val build = "$imageName:build-\$CI_PIPELINE_IID"
+	val build = "$imageName:build-${Variables.Pipeline.iid}"
 
 	dockerPull(latest, allowFailure = true)
 	dockerBuild(build, dockerfile, context, previousVersions = listOf(latest))
