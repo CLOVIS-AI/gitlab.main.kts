@@ -39,6 +39,20 @@ class BasicTest {
 					dockerRename(jsChromeImage)
 				}
 			}
+
+			val telegram by job {
+				stage = deploy
+				waitForNoOne()
+
+				publishChangelogToTelegram()
+			}
+
+			val discord by job {
+				stage = deploy
+				waitForNoOne()
+
+				publishChangelogToDiscord()
+			}
 		}.println()
 	}
 }
