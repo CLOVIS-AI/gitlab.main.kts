@@ -16,6 +16,23 @@ open class ContainerImage(val name: String) : YamlExport {
 
 		return yaml(elements)
 	}
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (other !is ContainerImage) return false
+
+		if (name != other.name) return false
+		if (entrypoint != other.entrypoint) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = name.hashCode()
+		result = 31 * result + (entrypoint?.hashCode() ?: 0)
+		return result
+	}
+
 }
 
 class ContainerService(name: String) : ContainerImage(name) {
@@ -32,6 +49,24 @@ class ContainerService(name: String) : ContainerImage(name) {
 			elements[yaml("command")] = yaml(command!!.map { yaml(it) })
 
 		return yaml(elements)
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (other !is ContainerService) return false
+		if (!super.equals(other)) return false
+
+		if (alias != other.alias) return false
+		if (command != other.command) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = super.hashCode()
+		result = 31 * result + (alias?.hashCode() ?: 0)
+		result = 31 * result + (command?.hashCode() ?: 0)
+		return result
 	}
 }
 

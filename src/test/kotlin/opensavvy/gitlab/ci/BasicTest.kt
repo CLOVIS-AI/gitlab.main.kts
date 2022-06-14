@@ -1,9 +1,9 @@
 package opensavvy.gitlab.ci
 
-import opensavvy.gitlab.ci.script.dockerBuildAndPush
-import opensavvy.gitlab.ci.script.dockerRename
-import opensavvy.gitlab.ci.script.useDockerInDocker
-import opensavvy.gitlab.ci.script.useGitLabRegistry
+import opensavvy.gitlab.ci.plugins.buildDockerfile
+import opensavvy.gitlab.ci.plugins.publishChangelogToDiscord
+import opensavvy.gitlab.ci.plugins.publishChangelogToTelegram
+import opensavvy.gitlab.ci.plugins.publishDocker
 import kotlin.test.Test
 
 class BasicTest {
@@ -12,35 +12,36 @@ class BasicTest {
 	fun basicTest() {
 		@Suppress("UNUSED_VARIABLE")
 		gitlabCi {
-			val jsChromeImage = "\$CI_REGISTRY_IMAGE/js-chrome"
+			val jsChromeImage = "${Variables.Registry.image}/js-chrome"
 
 			val docker by stage()
 			val deploy by stage()
 
 			val dockerJsChrome by job {
 				stage = docker
-				useDockerInDocker()
-				useGitLabRegistry()
-				waitForNoOne()
 
-				script {
-					dockerBuildAndPush(
-						jsChromeImage,
-						"client/build.dockerfile",
-						"client"
-					)
-				}
+				buildDockerfile("client/Dockerfile", jsChromeImage, "client")
 			}
 
 			val dockerJsChromeLatest by job {
 				stage = deploy
-				useDockerInDocker()
-				useGitLabRegistry()
 				waitFor(dockerJsChrome)
 
-				script {
-					dockerRename(jsChromeImage)
-				}
+				publishDocker(jsChromeImage, "latest")
+			}
+
+			val telegram by job {
+				stage = deploy
+				waitForNoOne()
+
+				publishChangelogToTelegram()
+			}
+
+			val discord by job {
+				stage = deploy
+				waitForNoOne()
+
+				publishChangelogToDiscord()
 			}
 		}.println()
 	}
