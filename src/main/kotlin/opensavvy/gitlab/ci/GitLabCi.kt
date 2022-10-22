@@ -1,6 +1,8 @@
 package opensavvy.gitlab.ci
 
 import opensavvy.gitlab.ci.yaml.yaml
+import opensavvy.gitlab.ci.yaml.yamlList
+import opensavvy.gitlab.ci.yaml.yamlMap
 
 /**
  * Entrypoint to the GitLab CI pipeline generation.
@@ -21,8 +23,8 @@ class GitLabCi : YamlExport {
 	internal val stages = LinkedHashSet<Stage>()
 	internal val jobs = ArrayList<Job>()
 
-	override fun toYaml() = yaml(
-		yaml("stages") to yaml(
+	override fun toYaml() = yamlMap(
+		yaml("stages") to yamlList(
 			stages.toList().map { yaml(it.name) }
 		),
 		*(jobs.map { yaml(it.name) to it.toYaml() }.toTypedArray())

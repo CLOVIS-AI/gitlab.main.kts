@@ -1,9 +1,7 @@
 package opensavvy.gitlab.ci
 
-import opensavvy.gitlab.ci.plugins.buildDockerfile
-import opensavvy.gitlab.ci.plugins.publishChangelogToDiscord
-import opensavvy.gitlab.ci.plugins.publishChangelogToTelegram
-import opensavvy.gitlab.ci.plugins.publishDocker
+import opensavvy.gitlab.ci.plugins.Gradle.Companion.gradlew
+import opensavvy.gitlab.ci.script.shell
 import kotlin.test.Test
 
 class BasicTest {
@@ -12,36 +10,55 @@ class BasicTest {
 	fun basicTest() {
 		@Suppress("UNUSED_VARIABLE")
 		gitlabCi {
-			val jsChromeImage = "${Variables.Registry.image}/js-chrome"
+			val build by stage()
+			val test by stage()
+			val publish by stage()
 
-			val docker by stage()
-			val deploy by stage()
+			val modules = listOf("logger", "backbone")
+			fun Job.publish(module: String, publication: String, repository: String) {
+				image("archlinux:base")
 
-			val dockerJsChrome by job {
-				stage = docker
-
-				buildDockerfile("client/Dockerfile", jsChromeImage, "client")
+				script {
+					shell("pacman -Syu --noconfirm git jre-openjdk-headless")
+					gradlew.task("$module:publish${publication}PublicationTo${repository}Repository")
+				}
 			}
 
-			val dockerJsChromeLatest by job {
-				stage = deploy
-				waitFor(dockerJsChrome)
-
-				publishDocker(jsChromeImage, "latest")
+			if (Value.isDefaultBranch || Value.isTag) {
+				for (module in modules) {
+					job("$module:publish", stage = publish) {
+						publish(module, "KotlinMultiplatform", "GitLab")
+					}
+				}
 			}
 
-			val telegram by job {
-				stage = deploy
-				waitForNoOne()
+			val dokka by job(stage = build) {
+				script {
+					gradlew.task("dokkaHtmlMultiModule")
+					shell("mv build/dokka/htmlMultiModule documentation")
+				}
 
-				publishChangelogToTelegram()
+				artifacts {
+					name("Documentation")
+					exposeAs("Documentation")
+
+					include("documentation")
+				}
 			}
 
-			val discord by job {
-				stage = deploy
-				waitForNoOne()
+			if (Value.isDefaultBranch) {
+				val pages by job(stage = publish) {
+					dependsOn(dokka, artifacts = true)
 
-				publishChangelogToDiscord()
+					script {
+						shell("mkdir -p public")
+						shell("mv documentation public")
+					}
+
+					artifacts {
+						include("public")
+					}
+				}
 			}
 		}.println()
 	}

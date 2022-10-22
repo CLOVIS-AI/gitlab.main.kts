@@ -32,5 +32,8 @@ fun yamlList(values: Set<YamlExport>) = yamlList(values.toList())
 fun yamlMap(values: Map<YamlExport, YamlExport>) =
 	Yaml.Collection.MapLiteral(values.map { (k, v) -> k.toYaml() to v.toYaml() })
 
+@JvmName("yamlStringList")
+fun yamlList(values: List<String>) = yamlList(values.map { yaml(it) })
+
 @JvmName("yamlStringMap")
 fun yamlMap(values: Map<String, String>) = yamlMap(*values.map { (k, v) -> yaml(k) to yaml(v) }.toTypedArray())

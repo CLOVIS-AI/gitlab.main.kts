@@ -172,6 +172,21 @@ class Job internal constructor(
 	}
 
 	//endregion
+	//region Cache & artifacts
+
+	val cache = Cache()
+
+	fun cache(configuration: Cache.() -> Unit) {
+		cache.apply(configuration)
+	}
+
+	val artifacts = Artifacts()
+
+	fun artifacts(configuration: Artifacts.() -> Unit) {
+		artifacts.apply(configuration)
+	}
+
+	//endregion
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -201,6 +216,10 @@ class Job internal constructor(
 
 		if (variables.isNotEmpty())
 			elements[yaml("variables")] = yamlMap(variables)
+
+		elements[yaml("cache")] = yaml(cache)
+
+		elements[yaml("artifacts")] = yaml(artifacts)
 
 		return yamlMap(elements)
 	}

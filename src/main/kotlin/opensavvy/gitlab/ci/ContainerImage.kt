@@ -2,6 +2,8 @@ package opensavvy.gitlab.ci
 
 import opensavvy.gitlab.ci.yaml.Yaml
 import opensavvy.gitlab.ci.yaml.yaml
+import opensavvy.gitlab.ci.yaml.yamlList
+import opensavvy.gitlab.ci.yaml.yamlMap
 
 open class ContainerImage internal constructor(val nameAndVersion: String) : YamlExport {
 	var entrypoint: List<String>? = null
@@ -12,9 +14,9 @@ open class ContainerImage internal constructor(val nameAndVersion: String) : Yam
 		elements[yaml("name")] = yaml(nameAndVersion)
 
 		if (entrypoint != null)
-			elements[yaml("entrypoint")] = yaml(entrypoint!!.map { yaml(it) })
+			elements[yaml("entrypoint")] = yamlList(entrypoint!!.map { yaml(it) })
 
-		return yaml(elements)
+		return yamlMap(elements)
 	}
 
 	override fun equals(other: Any?): Boolean {
@@ -45,9 +47,9 @@ class ContainerService internal constructor(name: String) : ContainerImage(name)
 			elements[yaml("alias")] = yaml(alias!!)
 
 		if (command?.isNotEmpty() == true)
-			elements[yaml("command")] = yaml(command!!.map { yaml(it) })
+			elements[yaml("command")] = yamlList(command!!.map { yaml(it) })
 
-		return yaml(elements)
+		return yamlMap(elements)
 	}
 
 	override fun equals(other: Any?): Boolean {
