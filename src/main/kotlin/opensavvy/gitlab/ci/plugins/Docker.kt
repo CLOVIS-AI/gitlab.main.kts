@@ -17,7 +17,7 @@ class Docker private constructor(private val dsl: CommandDsl) {
 
 	fun build(
 		image: String,
-		version: String,
+		version: String = "build-${Variable.MergeRequest.iid}",
 		dockerfile: String = "Dockerfile",
 		context: String = ".",
 		previousVersions: List<String> = listOf("latest"),
@@ -30,11 +30,18 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		shell("docker build --pull $cacheArgs --tag $image:$version -f $dockerfile $context")
 	}
 
-	fun push(image: String, version: String) = with(dsl) {
+	fun push(
+		image: String,
+		version: String = "build-${Variable.MergeRequest.iid}",
+	) = with(dsl) {
 		shell("docker push $image:$version")
 	}
 
-	fun rename(image: String, oldVersion: String, newVersion: String) = with(dsl) {
+	fun rename(
+		image: String,
+		oldVersion: String = "build-${Variable.MergeRequest.iid}",
+		newVersion: String = "latest",
+	) = with(dsl) {
 		pull(image, oldVersion)
 		shell("docker tag $image:$oldVersion $image$newVersion")
 		push(image, newVersion)

@@ -25,8 +25,8 @@ class MinecraftTest {
 				useContainerRegistry()
 
 				script {
-					docker.build(k8sImage, tmpVersion, dockerfile = "k8s.dockerfile")
-					docker.push(k8sImage, tmpVersion)
+					docker.build(k8sImage, dockerfile = "k8s.dockerfile")
+					docker.push(k8sImage)
 				}
 			}
 
@@ -37,7 +37,7 @@ class MinecraftTest {
 				dependsOn(buildK8s)
 
 				script {
-					docker.rename(k8sImage, tmpVersion, "latest")
+					docker.rename(k8sImage)
 				}
 			}
 
