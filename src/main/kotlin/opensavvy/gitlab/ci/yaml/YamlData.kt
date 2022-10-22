@@ -1,11 +1,14 @@
 package opensavvy.gitlab.ci.yaml
 
+import opensavvy.gitlab.ci.YamlExport
 import opensavvy.gitlab.ci.utils.plusAssign
 
-sealed class Yaml {
+sealed class Yaml : YamlExport {
 
 	abstract fun toYamlString(indentation: Int): CharSequence
 	fun toYamlString() = toYamlString(0).toString()
+
+	override fun toYaml() = this
 
 	sealed class Scalar : Yaml() {
 
@@ -78,6 +81,8 @@ sealed class Yaml {
 		data class MapLiteral(val contents: Map<Yaml, Yaml>) : Collection() {
 
 			constructor(vararg child: Pair<Yaml, Yaml>) : this(mapOf(*child))
+
+			constructor(contents: List<Pair<Yaml, Yaml>>) : this(contents.toMap())
 
 			override fun toYamlString(indentation: Int): CharSequence {
 				val builder = StringBuilder()

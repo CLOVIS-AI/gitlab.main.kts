@@ -11,36 +11,160 @@ import opensavvy.gitlab.ci.yaml.yaml
  *
  * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/jobs/).
  */
-class Job(
+class Job internal constructor(
 	val name: String,
 	val stage: Stage? = null,
 ) : YamlExport {
 
-	internal var image: ContainerImage? = null
-	internal var script = ArrayList<Command>()
-	internal var beforeScript = ArrayList<Command>()
-	internal var afterScript = ArrayList<Command>()
-	internal val tags = HashSet<String>()
+	//region Image & services
+
+	var image: ContainerImage? = null
+		private set(value) {
+			if (field != null && field != value)
+				System.err.println("Job '$name': setting the image to $value overrides previous setting $field")
+			field = value
+		}
+
+	/**
+	 * The container image used to execute this job.
+	 *
+	 * Example:
+	 * ```kotlin
+	 * val ubuntu by job {
+	 *     image("ubuntu")
+	 * }
+	 * ```
+	 *
+	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#image).
+	 */
+	fun image(name: String, version: String = "latest", configuration: ContainerImage.() -> Unit = {}) {
+		image = ContainerImage("$name:$version").apply(configuration)
+	}
+
+	val services = HashSet<ContainerService>()
+
+	/**
+	 * Additional container images used by this job.
+	 *
+	 * Example:
+	 * ```kotlin
+	 * val docker by job {
+	 *     image("docker")
+	 *     service("docker", version = "dind")
+	 * }
+	 * ```
+	 *
+	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#services).
+	 */
+	fun service(name: String, version: String = "latest", configuration: ContainerService.() -> Unit = {}) {
+		services += ContainerService("$name:$version").apply(configuration)
+	}
+
+	//endregion
+	//region Script
+
+	val script = ArrayList<Command>()
+
+	/**
+	 * Adds commands to execute in this job.
+	 *
+	 * Example:
+	 * ```kotlin
+	 * val test by job {
+	 *     script {
+	 *         shell("echo Hello World")
+	 *     }
+	 *
+	 *     script {
+	 *         shell("echo You can call 'script' multiple times")
+	 *         shell("echo or add multiple commands inside a single 'script' call")
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * Calling `script` multiple times executes the commands after the previous ones (the execution happens in the same order as in the source code).
+	 *
+	 * See [CommandDsl] to see what functions are available in `script`.
+	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#script).
+	 */
+	fun script(block: CommandDsl.() -> Unit) {
+		CommandDsl(script).block()
+	}
+
+	val beforeScript = ArrayList<Command>()
+
+	/**
+	 * Adds commands to execute before the main script of this job.
+	 *
+	 * `beforeScript` has the same behavior as [script].
+	 *
+	 * Read more about the differences between [script] and `beforeScript` in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#before_script).
+	 */
+	fun beforeScript(block: CommandDsl.() -> Unit) {
+		CommandDsl(beforeScript).block()
+	}
+
+	val afterScript = ArrayList<Command>()
+
+	/**
+	 * Adds commands to execute after the main script of this job.
+	 *
+	 * `afterScript` has the same behavior as [script].
+	 *
+	 * Read more about the differences between [script] and `afterScript` in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#after_script).
+	 */
+	fun afterScript(block: CommandDsl.() -> Unit) {
+		CommandDsl(afterScript).block()
+	}
+
+	//endregion
+	//region Tags
+
+	val tags = HashSet<String>()
+
+	/**
+	 * Adds a tag to this job.
+	 *
+	 * Only runners that are possess the same tag(s) will be able to execute this job.
+	 * For example, to run a job only on runners that run on ArchLinux and have Docker:
+	 * ```kotlin
+	 * val test by job {
+	 *    tag("archlinux")
+	 *    tag("docker")
+	 *
+	 *    script { … }
+	 * }
+	 * ```
+	 * The tags themselves do not have any special meaning.
+	 *
+	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#tags).
+	 */
+	fun tag(name: String) {
+		tags += name
+	}
+
+	//endregion
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
 
 		if (image != null)
-			elements[yaml("image")] = yaml(image!!.toYaml())
+			elements[yaml("image")] = yaml(image!!)
+
+		if (services.isNotEmpty())
+			elements[yaml("services")] = yaml(services)
 
 		if (stage != null)
 			elements[yaml("stage")] = yaml(stage.name)
 
 		if (script.isNotEmpty())
-			elements[yaml("script")] = yaml(script.map { it.toYaml() })
+			elements[yaml("script")] = yaml(script)
 
 		if (beforeScript.isNotEmpty())
-			elements[yaml("before_script")] =
-				yaml(beforeScript.map { it.toYaml() })
+			elements[yaml("before_script")] = yaml(beforeScript)
 
 		if (afterScript.isNotEmpty())
-			elements[yaml("after_script")] =
-				yaml(afterScript.map { it.toYaml() })
+			elements[yaml("after_script")] = yaml(afterScript)
 
 		if (tags.isNotEmpty())
 			elements[yaml("tags")] = yaml(tags.map { yaml(it) })
@@ -49,74 +173,11 @@ class Job(
 	}
 }
 
-/**
- * Adds commands to execute in this job.
- *
- * Example:
- * ```kotlin
- * val test by job {
- *     script {
- *         shell("echo Hello World")
- *     }
- *
- *     script {
- *         shell("echo You can call 'script' multiple times")
- *         shell("echo or add multiple commands inside a single 'script' call")
- *     }
- * }
- * ```
- *
- * Calling `script` multiple times executes the commands after the previous ones (the execution happens in the same order as in the source code).
- *
- * See [CommandDsl] to see what functions are available in `script`.
- * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#script).
- */
-fun Job.script(block: CommandDsl.() -> Unit) = CommandDsl(script).block()
-
-/**
- * Adds commands to execute before the main script of this job.
- *
- * `beforeScript` has the same behavior as [script].
- *
- * Read more about the differences between [script] and `beforeScript` in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#before_script).
- */
-fun Job.beforeScript(block: CommandDsl.() -> Unit) = CommandDsl(beforeScript).block()
-
-/**
- * Adds commands to execute after the main script of this job.
- *
- * `afterScript` has the same behavior as [script].
- *
- * Read more about the differences between [script] and `afterScript` in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#after_script).
- */
-fun Job.afterScript(block: CommandDsl.() -> Unit) = CommandDsl(afterScript).block()
-
-/**
- * Adds a tag to this job.
- *
- * Only runners that are possess the same tag(s) will be able to execute this job.
- * For example, to run a job only on runners that run on ArchLinux and have Docker:
- * ```kotlin
- * val test by job {
- *    tag("archlinux")
- *    tag("docker")
- *
- *    script { … }
- * }
- * ```
- * The tags themselves do not have any special meaning.
- *
- * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#tags).
- */
-fun Job.tag(name: String) {
-	tags += name
-}
-
 fun GitLabCi.job(name: String, stage: Stage? = null, block: Job.() -> Unit) = Job(name, stage)
 	.apply(block)
 	.also { jobs += it }
 
 fun GitLabCi.job(name: String? = null, stage: Stage? = null, block: Job.() -> Unit = {}) =
 	generateReadOnlyDelegateProvider { parent, property ->
-		job(name ?: property.name, stage, block)
+		parent.job(name ?: property.name, stage, block)
 	}
