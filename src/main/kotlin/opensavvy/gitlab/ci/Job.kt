@@ -5,6 +5,8 @@ import opensavvy.gitlab.ci.script.CommandDsl
 import opensavvy.gitlab.ci.utils.generateReadOnlyDelegateProvider
 import opensavvy.gitlab.ci.yaml.Yaml
 import opensavvy.gitlab.ci.yaml.yaml
+import opensavvy.gitlab.ci.yaml.yamlList
+import opensavvy.gitlab.ci.yaml.yamlMap
 
 /**
  * A single execution step in a [pipeline][GitLabCi].
@@ -161,6 +163,15 @@ class Job internal constructor(
 	}
 
 	//endregion
+	//region Variables
+
+	val variables = HashMap<String, String>()
+
+	fun variable(name: String, value: String) {
+		variables[name] = value
+	}
+
+	//endregion
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -169,26 +180,29 @@ class Job internal constructor(
 			elements[yaml("image")] = yaml(image!!)
 
 		if (services.isNotEmpty())
-			elements[yaml("services")] = yaml(services)
+			elements[yaml("services")] = yamlList(services)
 
 		if (stage != null)
 			elements[yaml("stage")] = yaml(stage.name)
 
 		if (script.isNotEmpty())
-			elements[yaml("script")] = yaml(script)
+			elements[yaml("script")] = yamlList(script)
 
 		if (beforeScript.isNotEmpty())
-			elements[yaml("before_script")] = yaml(beforeScript)
+			elements[yaml("before_script")] = yamlList(beforeScript)
 
 		if (afterScript.isNotEmpty())
-			elements[yaml("after_script")] = yaml(afterScript)
+			elements[yaml("after_script")] = yamlList(afterScript)
 
 		if (tags.isNotEmpty())
-			elements[yaml("tags")] = yaml(tags.map { yaml(it) })
+			elements[yaml("tags")] = yamlList(tags.map { yaml(it) })
 
-		elements[yaml("needs")] = yaml(needs)
+		elements[yaml("needs")] = yamlList(needs)
 
-		return yaml(elements)
+		if (variables.isNotEmpty())
+			elements[yaml("variables")] = yamlMap(variables)
+
+		return yamlMap(elements)
 	}
 }
 

@@ -14,20 +14,23 @@ fun yaml(value: Boolean?) = if (value == null) Yaml.Scalar.NullLiteral else yaml
 fun yaml(value: Nothing?) = Yaml.Scalar.NullLiteral
 fun yaml(value: YamlExport) = value.toYaml()
 
-fun yaml(vararg values: YamlExport) = Yaml.Collection.ListLiteral(values.map { it.toYaml() })
-fun yaml(vararg values: Pair<YamlExport, YamlExport>) =
+fun yamlList(vararg values: YamlExport) = Yaml.Collection.ListLiteral(values.map { it.toYaml() })
+fun yamlMap(vararg values: Pair<YamlExport, YamlExport>) =
 	Yaml.Collection.MapLiteral(values.map { (k, v) -> k.toYaml() to v.toYaml() })
 
-fun yaml(values: List<Yaml>) = Yaml.Collection.ListLiteral(values)
-fun yaml(values: Set<Yaml>) = yaml(values.toList())
-fun yaml(values: Map<Yaml, Yaml>) = Yaml.Collection.MapLiteral(values)
+fun yamlList(values: List<Yaml>) = Yaml.Collection.ListLiteral(values)
+fun yamlList(values: Set<Yaml>) = yamlList(values.toList())
+fun yamlMap(values: Map<Yaml, Yaml>) = Yaml.Collection.MapLiteral(values)
 
 @JvmName("yamlAuto")
-fun yaml(values: List<YamlExport>) = Yaml.Collection.ListLiteral(values.map { it.toYaml() })
+fun yamlList(values: List<YamlExport>) = Yaml.Collection.ListLiteral(values.map { it.toYaml() })
 
 @JvmName("yamlAuto")
-fun yaml(values: Set<YamlExport>) = yaml(values.toList())
+fun yamlList(values: Set<YamlExport>) = yamlList(values.toList())
 
 @JvmName("yamlAuto")
-fun yaml(values: Map<YamlExport, YamlExport>) =
+fun yamlMap(values: Map<YamlExport, YamlExport>) =
 	Yaml.Collection.MapLiteral(values.map { (k, v) -> k.toYaml() to v.toYaml() })
+
+@JvmName("yamlStringMap")
+fun yamlMap(values: Map<String, String>) = yamlMap(*values.map { (k, v) -> yaml(k) to yaml(v) }.toTypedArray())
