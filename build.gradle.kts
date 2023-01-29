@@ -3,11 +3,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
 
+    id("com.palantir.git-version")
     id("maven-publish")
 }
 
 group = "opensavvy"
-version = "1.0-SNAPSHOT"
+version = calculateVersion()
 
 dependencies {
     testImplementation(kotlin("test"))
@@ -55,4 +56,14 @@ allprojects {
                 logger.debug("The GitLab registry is disabled because credentials are missing.")
         }
     }
+}
+
+fun calculateVersion(): String {
+    val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
+    val details = versionDetails()
+
+    return if (details.commitDistance == 0)
+        details.lastTag
+    else
+        "${details.lastTag}-post.${details.commitDistance}+${details.gitHash}"
 }
