@@ -27,3 +27,16 @@ test:
     - "./gradlew test"
 
   interruptible: true
+
+publish:
+  image: $jdk_image
+  stage: deploy
+  extends: [ .os.gradle ]
+  needs: [ test ]
+
+  script:
+    - "./gradlew publishAllPublicationsToGitLabRepository"
+
+  rules:
+    - if: $CI_PIPELINE_REF_NAME == $CI_DEFAULT_BRANCH
+  interruptible: false
