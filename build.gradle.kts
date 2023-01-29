@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
 
     id("com.palantir.git-version")
+    id("com.adarshr.test-logger")
     id("maven-publish")
 }
 
@@ -54,6 +55,14 @@ allprojects {
                 }
             else
                 logger.debug("The GitLab registry is disabled because credentials are missing.")
+        }
+    }
+
+    if (System.getenv("CI") != null) {
+        plugins.apply("com.adarshr.test-logger")
+
+        testlogger {
+            theme = com.adarshr.gradle.testlogger.theme.ThemeType.MOCHA
         }
     }
 }
