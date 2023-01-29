@@ -51,6 +51,6 @@ fun GitLabCi.stage(name: String): Stage = Stage(name)
  *
  * To use a different name than the variable's name, use the [stage] function.
  */
-fun GitLabCi.stage() = generateReadOnlyDelegateProvider { parent, property ->
-	stage(property.name)
+fun GitLabCi.stage(name: String? = null) = generateReadOnlyDelegateProvider { pipeline, property ->
+	pipeline.stage(name ?: property.name)
 }

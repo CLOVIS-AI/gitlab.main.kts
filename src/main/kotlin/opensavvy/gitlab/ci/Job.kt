@@ -5,218 +5,231 @@ import opensavvy.gitlab.ci.script.CommandDsl
 import opensavvy.gitlab.ci.utils.generateReadOnlyDelegateProvider
 import opensavvy.gitlab.ci.yaml.Yaml
 import opensavvy.gitlab.ci.yaml.yaml
-import org.intellij.lang.annotations.Language
+import opensavvy.gitlab.ci.yaml.yamlList
+import opensavvy.gitlab.ci.yaml.yamlMap
 
 /**
  * A single execution step in a [pipeline][GitLabCi].
  *
  * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/jobs/).
  */
-class Job(
-	var name: String,
+class Job internal constructor(
+	val name: String,
+	val stage: Stage? = null,
 ) : YamlExport {
 
+	//region Image & services
+
+	var image: ContainerImage? = null
+		private set(value) {
+			if (field != null && field != value)
+				System.err.println("Job '$name': setting the image to $value overrides previous setting $field")
+			field = value
+		}
+
 	/**
-	 * The [Stage] this job is a part of.
+	 * The container image used to execute this job.
 	 *
 	 * Example:
 	 * ```kotlin
-	 * val pipeline = gitlabCi {
-	 *     val build by stage()
+	 * val ubuntu by job {
+	 *     image("ubuntu")
+	 * }
+	 * ```
 	 *
-	 *     val prepare by job {
-	 *         stage = build
-	 *         script { … }
+	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#image).
+	 */
+	fun image(name: String, version: String = "latest", configuration: ContainerImage.() -> Unit = {}) {
+		image = ContainerImage("$name:$version").apply(configuration)
+	}
+
+	val services = HashSet<ContainerService>()
+
+	/**
+	 * Additional container images used by this job.
+	 *
+	 * Example:
+	 * ```kotlin
+	 * val docker by job {
+	 *     image("docker")
+	 *     service("docker", version = "dind")
+	 * }
+	 * ```
+	 *
+	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#services).
+	 */
+	fun service(name: String, version: String = "latest", configuration: ContainerService.() -> Unit = {}) {
+		services += ContainerService("$name:$version").apply(configuration)
+	}
+
+	//endregion
+	//region Script
+
+	val script = ArrayList<Command>()
+
+	/**
+	 * Adds commands to execute in this job.
+	 *
+	 * Example:
+	 * ```kotlin
+	 * val test by job {
+	 *     script {
+	 *         shell("echo Hello World")
+	 *     }
+	 *
+	 *     script {
+	 *         shell("echo You can call 'script' multiple times")
+	 *         shell("echo or add multiple commands inside a single 'script' call")
 	 *     }
 	 * }
 	 * ```
 	 *
-	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#stage).
+	 * Calling `script` multiple times executes the commands after the previous ones (the execution happens in the same order as in the source code).
+	 *
+	 * See [CommandDsl] to see what functions are available in `script`.
+	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#script).
 	 */
-	var stage: Stage? = null
+	fun script(block: CommandDsl.() -> Unit) {
+		CommandDsl(script).block()
+	}
+
+	val beforeScript = ArrayList<Command>()
 
 	/**
-	 * Sets the regular expression used to extract the code coverage information from the output of this job.
+	 * Adds commands to execute before the main script of this job.
 	 *
-	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#coverage).
+	 * `beforeScript` has the same behavior as [script].
+	 *
+	 * Read more about the differences between [script] and `beforeScript` in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#before_script).
 	 */
-	@Language("RegExp")
-	var coverage: String? = null
+	fun beforeScript(block: CommandDsl.() -> Unit) {
+		CommandDsl(beforeScript).block()
+	}
 
-	internal var script = ArrayList<Command>()
-	internal var beforeScript = ArrayList<Command>()
-	internal var afterScript = ArrayList<Command>()
-	internal var allowFailure: ConditionalFailure = ConditionalFailure.Always(false)
-	internal val artifact = Artifact()
-	internal val cache = ArrayList<Cache>()
-	internal val dependencies = HashSet<Job>()
-	internal var needs: HashSet<Job>? = null
-	internal var image: ContainerImage? = null
-	internal var services = HashSet<ContainerService>()
-	internal val tags = HashSet<String>()
+	val afterScript = ArrayList<Command>()
+
+	/**
+	 * Adds commands to execute after the main script of this job.
+	 *
+	 * `afterScript` has the same behavior as [script].
+	 *
+	 * Read more about the differences between [script] and `afterScript` in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#after_script).
+	 */
+	fun afterScript(block: CommandDsl.() -> Unit) {
+		CommandDsl(afterScript).block()
+	}
+
+	//endregion
+	//region Tags
+
+	val tags = HashSet<String>()
+
+	/**
+	 * Adds a tag to this job.
+	 *
+	 * Only runners that are possess the same tag(s) will be able to execute this job.
+	 * For example, to run a job only on runners that run on ArchLinux and have Docker:
+	 * ```kotlin
+	 * val test by job {
+	 *    tag("archlinux")
+	 *    tag("docker")
+	 *
+	 *    script { … }
+	 * }
+	 * ```
+	 * The tags themselves do not have any special meaning.
+	 *
+	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#tags).
+	 */
+	fun tag(name: String) {
+		tags += name
+	}
+
+	//endregion
+	//region Dependencies
+
+	val needs = ArrayList<Depends>()
+
+	/**
+	 * This job will wait until [job] has terminated.
+	 *
+	 * By default, jobs start immediately.
+	 *
+	 * If [artifacts] is `true`, the artifacts generated by [job] will be downloaded by the current job.
+	 * If [optional] is `true`, this job will run even if [job] was excluded from this pipeline (using `rules`, `only` or `when`).
+	 */
+	fun dependsOn(job: Job, artifacts: Boolean = false, optional: Boolean = false) {
+		needs += Depends(job, artifacts, optional)
+	}
+
+	//endregion
+	//region Variables
+
+	val variables = HashMap<String, String>()
+
+	fun variable(name: String, value: String) {
+		variables[name] = value
+	}
+
+	//endregion
+	//region Cache & artifacts
+
+	val cache = Cache()
+
+	fun cache(configuration: Cache.() -> Unit) {
+		cache.apply(configuration)
+	}
+
+	val artifacts = Artifacts()
+
+	fun artifacts(configuration: Artifacts.() -> Unit) {
+		artifacts.apply(configuration)
+	}
+
+	//endregion
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
 
-		if (stage != null)
-			elements[yaml("stage")] = yaml(stage!!.name)
-
-		elements[yaml("allow_failure")] = allowFailure.toYaml()
-
-		if (script.isNotEmpty())
-			elements[yaml("script")] = yaml(script.map { it.toYaml() })
-
-		if (beforeScript.isNotEmpty())
-			elements[yaml("before_script")] =
-				yaml(beforeScript.map { it.toYaml() })
-
-		if (afterScript.isNotEmpty())
-			elements[yaml("after_script")] =
-				yaml(afterScript.map { it.toYaml() })
-
-		elements[yaml("artifacts")] = artifact.toYaml()
-
-		if (cache.isNotEmpty())
-			elements[yaml("cache")] = yaml(cache.map { it.toYaml() })
-
-		if (dependencies.isNotEmpty())
-			elements[yaml("dependencies")] = yaml(dependencies.map { yaml(it.name) })
-
-		if (needs != null)
-			elements[yaml("needs")] = yaml(needs!!.map { yaml(it.name) } + dependencies.map { yaml(it.name) })
-
 		if (image != null)
-			elements[yaml("image")] = image!!.toYaml()
+			elements[yaml("image")] = yaml(image!!)
 
 		if (services.isNotEmpty())
-			elements[yaml("services")] = yaml(services.map { it.toYaml() })
+			elements[yaml("services")] = yamlList(services)
+
+		if (stage != null)
+			elements[yaml("stage")] = yaml(stage.name)
+
+		if (script.isNotEmpty())
+			elements[yaml("script")] = yamlList(script)
+
+		if (beforeScript.isNotEmpty())
+			elements[yaml("before_script")] = yamlList(beforeScript)
+
+		if (afterScript.isNotEmpty())
+			elements[yaml("after_script")] = yamlList(afterScript)
 
 		if (tags.isNotEmpty())
-			elements[yaml("tags")] = yaml(tags.map { yaml(it) })
+			elements[yaml("tags")] = yamlList(tags.map { yaml(it) })
 
-		return yaml(elements)
+		elements[yaml("needs")] = yamlList(needs)
+
+		if (variables.isNotEmpty())
+			elements[yaml("variables")] = yamlMap(variables)
+
+		elements[yaml("cache")] = yaml(cache)
+
+		elements[yaml("artifacts")] = yaml(artifacts)
+
+		return yamlMap(elements)
 	}
 }
 
-/**
- * Adds commands to execute in this job.
- *
- * Example:
- * ```kotlin
- * val test by job {
- *     script {
- *         shell("echo Hello World")
- *     }
- *
- *     script {
- *         shell("echo You can call 'script' multiple times")
- *         shell("echo or add multiple commands inside a single 'script' call")
- *     }
- * }
- * ```
- *
- * Calling `script` multiple times executes the commands after the previous ones (the execution happens in the same order as in the source code).
- *
- * See [CommandDsl] to see what functions are available in `script`.
- * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#script).
- */
-fun Job.script(block: CommandDsl.() -> Unit) = CommandDsl(script).block()
-
-/**
- * Adds commands to execute before the main script of this job.
- *
- * `beforeScript` has the same behavior as [script].
- *
- * Read more about the differences between [script] and `beforeScript` in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#before_script).
- */
-fun Job.beforeScript(block: CommandDsl.() -> Unit) = CommandDsl(beforeScript).block()
-
-/**
- * Adds commands to execute after the main script of this job.
- *
- * `afterScript` has the same behavior as [script].
- *
- * Read more about the differences between [script] and `afterScript` in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#after_script).
- */
-fun Job.afterScript(block: CommandDsl.() -> Unit) = CommandDsl(afterScript).block()
-
-/**
- * Adds a tag to this job.
- *
- * Only runners that are possess the same tag(s) will be able to execute this job.
- * For example, to run a job only on runners that run on ArchLinux and have Docker:
- * ```kotlin
- * val test by job {
- *    tag("archlinux")
- *    tag("docker")
- *
- *    script { … }
- * }
- * ```
- * The tags themselves do not have any special meaning.
- *
- * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#tags).
- */
-fun Job.tag(name: String) {
-	tags += name
-}
-
-/**
- * Marks this [Job] has having a dependency on the [artifacts][Job.artifact] generated by [parentJob].
- *
- * A dependency on artifacts from a job implies that this job should [waitFor] the [parentJob].
- */
-fun Job.downloadArtifactsFrom(parentJob: Job) {
-	dependencies += parentJob
-}
-
-/**
- * Marks this [Job] has having a dependency on [previousJob]: this job can only start after [previousJob] has finished.
- *
- * If this function is called on a job, it will no longer wait for the stage it is a part of.
- *
- * @see waitForNoOne
- */
-fun Job.waitFor(previousJob: Job) {
-	if (needs == null)
-		needs = HashSet<Job>().apply { this += previousJob }
-	else
-		needs!! += previousJob
-}
-
-/**
- * This job will ignore the stage it is a part of to decide when it is ready to start.
- *
- * Example:
- * ```kotlin
- * val pipeline = gitlabCi {
- *     val build by stage()
- *     val test by stage()
- *
- *     // This job will start whenever all jobs in the 'build' stage are done
- *     val patient by job {
- *         stage = test
- *     }
- *
- *     // This job will start as soon as the pipeline starts, even if the 'build' stage is not finished
- *     val impatient by job {
- *         stage = test
- *         waitForNoOne()
- *     }
- * }
- * ```
- *
- * All dependencies previously added with [waitFor] are removed.
- * @see waitFor
- */
-fun Job.waitForNoOne() {
-	needs = HashSet()
-}
-
-fun GitLabCi.job(name: String, block: Job.() -> Unit) = Job(name)
+fun GitLabCi.job(name: String, stage: Stage? = null, block: Job.() -> Unit) = Job(name, stage)
 	.apply(block)
 	.also { jobs += it }
 
-fun GitLabCi.job(block: Job.() -> Unit = {}) = generateReadOnlyDelegateProvider { parent, property ->
-	job(property.name, block)
-}
+fun GitLabCi.job(name: String? = null, stage: Stage? = null, block: Job.() -> Unit = {}) =
+	generateReadOnlyDelegateProvider { parent, property ->
+		parent.job(name ?: property.name, stage, block)
+	}

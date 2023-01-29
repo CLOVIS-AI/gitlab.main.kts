@@ -1,6 +1,7 @@
 package opensavvy.gitlab.ci.plugins
 
-import opensavvy.gitlab.ci.*
+import opensavvy.gitlab.ci.Job
+import opensavvy.gitlab.ci.When
 import opensavvy.gitlab.ci.script.shell
 
 fun Job.publishChangelogToTelegram() {
@@ -13,7 +14,7 @@ fun Job.publishChangelogToTelegram() {
 
 	artifacts {
 		include("changelog-telegram")
-		always()
+		rule(When.Always)
 	}
 }
 
@@ -27,6 +28,6 @@ fun Job.publishChangelogToDiscord() {
 
 	artifacts {
 		include("changelog-discord.json")
-		always()
+		rule(When.Always)
 	}
 }

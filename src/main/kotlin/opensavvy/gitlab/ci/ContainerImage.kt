@@ -2,40 +2,41 @@ package opensavvy.gitlab.ci
 
 import opensavvy.gitlab.ci.yaml.Yaml
 import opensavvy.gitlab.ci.yaml.yaml
+import opensavvy.gitlab.ci.yaml.yamlList
+import opensavvy.gitlab.ci.yaml.yamlMap
 
-open class ContainerImage(val name: String) : YamlExport {
+open class ContainerImage internal constructor(val nameAndVersion: String) : YamlExport {
 	var entrypoint: List<String>? = null
 
 	override fun toYaml(): Yaml.Collection.MapLiteral {
 		val elements = HashMap<Yaml, Yaml>()
 
-		elements[yaml("name")] = yaml(name)
+		elements[yaml("name")] = yaml(nameAndVersion)
 
 		if (entrypoint != null)
-			elements[yaml("entrypoint")] = yaml(entrypoint!!.map { yaml(it) })
+			elements[yaml("entrypoint")] = yamlList(entrypoint!!.map { yaml(it) })
 
-		return yaml(elements)
+		return yamlMap(elements)
 	}
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
 		if (other !is ContainerImage) return false
 
-		if (name != other.name) return false
+		if (nameAndVersion != other.nameAndVersion) return false
 		if (entrypoint != other.entrypoint) return false
 
 		return true
 	}
 
 	override fun hashCode(): Int {
-		var result = name.hashCode()
+		var result = nameAndVersion.hashCode()
 		result = 31 * result + (entrypoint?.hashCode() ?: 0)
 		return result
 	}
-
 }
 
-class ContainerService(name: String) : ContainerImage(name) {
+class ContainerService internal constructor(name: String) : ContainerImage(name) {
 	var alias: String? = null
 	var command: List<String>? = null
 
@@ -46,9 +47,9 @@ class ContainerService(name: String) : ContainerImage(name) {
 			elements[yaml("alias")] = yaml(alias!!)
 
 		if (command?.isNotEmpty() == true)
-			elements[yaml("command")] = yaml(command!!.map { yaml(it) })
+			elements[yaml("command")] = yamlList(command!!.map { yaml(it) })
 
-		return yaml(elements)
+		return yamlMap(elements)
 	}
 
 	override fun equals(other: Any?): Boolean {
@@ -68,12 +69,4 @@ class ContainerService(name: String) : ContainerImage(name) {
 		result = 31 * result + (command?.hashCode() ?: 0)
 		return result
 	}
-}
-
-fun Job.image(name: String, block: ContainerImage.() -> Unit = {}) {
-	image = ContainerImage(name).apply(block)
-}
-
-fun Job.service(name: String, block: ContainerImage.() -> Unit = {}) {
-	services += ContainerService(name).apply(block)
 }
