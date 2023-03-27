@@ -1,5 +1,6 @@
 package opensavvy.gitlab.ci
 
+import opensavvy.gitlab.ci.diff.assertEqualsFile
 import opensavvy.gitlab.ci.plugins.Docker.Companion.docker
 import opensavvy.gitlab.ci.plugins.Docker.Companion.useContainerRegistry
 import opensavvy.gitlab.ci.plugins.Docker.Companion.useDockerInDocker
@@ -65,6 +66,6 @@ class MinecraftTest {
 			}
 		}
 
-		ci.println()
+		assertEqualsFile("minecraft.gitlab-ci.yml", ci)
 	}
 }

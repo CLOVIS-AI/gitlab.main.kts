@@ -1,0 +1,379 @@
+
+stages: 
+  - test
+  - publish
+'logger:test:jvm': 
+  needs: []
+  image: 
+    name: 'openjdk:latest'
+  variables: 
+    GRADLE_USER_HOME: $CI_BUILDS_DIR/.gradle
+  cache: 
+    paths: 
+      - .gradle/wrapper
+      - .gradle/caches
+    key: 
+      files: 
+        - gradle/wrapper/gradle.properties
+  stage: test
+  script: 
+    - './gradlew logger:koverReport logger:koverVerify'
+  artifacts: 
+    reports: 
+      junit: logger/build/test-results/jvmTest/**.xml
+    paths: 
+      - test-report-logger
+    expose_as: Test and coverage report
+    exclude: []
+    when: always
+'logger:test:jvm-coverage': 
+  needs: 
+    - 
+      job: 'logger:test:jvm'
+      artifacts: true
+      optional: false
+  image: 
+    name: 'registry.gitlab.com/haynes/jacoco2cobertura:1.0.8'
+  cache: 
+    paths: []
+  stage: test
+  script: 
+    - python /opt/cover2cover.py test-report-logger/coverage.xml $CI_BUILDS_DIR/logger/src/main/kotlin >cobertura.xml
+  artifacts: 
+    reports: 
+      coverage_report: 
+        coverage_format: cobertura
+        path: cobertura.xml
+    paths: []
+    exclude: []
+    when: always
+'state:test:jvm': 
+  needs: []
+  image: 
+    name: 'openjdk:latest'
+  variables: 
+    GRADLE_USER_HOME: $CI_BUILDS_DIR/.gradle
+  cache: 
+    paths: 
+      - .gradle/wrapper
+      - .gradle/caches
+    key: 
+      files: 
+        - gradle/wrapper/gradle.properties
+  stage: test
+  script: 
+    - './gradlew state:koverReport state:koverVerify'
+  artifacts: 
+    reports: 
+      junit: state/build/test-results/jvmTest/**.xml
+    paths: 
+      - test-report-state
+    expose_as: Test and coverage report
+    exclude: []
+    when: always
+'state:test:jvm-coverage': 
+  needs: 
+    - 
+      job: 'state:test:jvm'
+      artifacts: true
+      optional: false
+  image: 
+    name: 'registry.gitlab.com/haynes/jacoco2cobertura:1.0.8'
+  cache: 
+    paths: []
+  stage: test
+  script: 
+    - python /opt/cover2cover.py test-report-state/coverage.xml $CI_BUILDS_DIR/state/src/main/kotlin >cobertura.xml
+  artifacts: 
+    reports: 
+      coverage_report: 
+        coverage_format: cobertura
+        path: cobertura.xml
+    paths: []
+    exclude: []
+    when: always
+'cache:test:jvm': 
+  needs: []
+  image: 
+    name: 'openjdk:latest'
+  variables: 
+    GRADLE_USER_HOME: $CI_BUILDS_DIR/.gradle
+  cache: 
+    paths: 
+      - .gradle/wrapper
+      - .gradle/caches
+    key: 
+      files: 
+        - gradle/wrapper/gradle.properties
+  stage: test
+  script: 
+    - './gradlew cache:koverReport cache:koverVerify'
+  artifacts: 
+    reports: 
+      junit: cache/build/test-results/jvmTest/**.xml
+    paths: 
+      - test-report-cache
+    expose_as: Test and coverage report
+    exclude: []
+    when: always
+'cache:test:jvm-coverage': 
+  needs: 
+    - 
+      job: 'cache:test:jvm'
+      artifacts: true
+      optional: false
+  image: 
+    name: 'registry.gitlab.com/haynes/jacoco2cobertura:1.0.8'
+  cache: 
+    paths: []
+  stage: test
+  script: 
+    - python /opt/cover2cover.py test-report-cache/coverage.xml $CI_BUILDS_DIR/cache/src/main/kotlin >cobertura.xml
+  artifacts: 
+    reports: 
+      coverage_report: 
+        coverage_format: cobertura
+        path: cobertura.xml
+    paths: []
+    exclude: []
+    when: always
+'backbone:test:jvm': 
+  needs: []
+  image: 
+    name: 'openjdk:latest'
+  variables: 
+    GRADLE_USER_HOME: $CI_BUILDS_DIR/.gradle
+  cache: 
+    paths: 
+      - .gradle/wrapper
+      - .gradle/caches
+    key: 
+      files: 
+        - gradle/wrapper/gradle.properties
+  stage: test
+  script: 
+    - './gradlew backbone:koverReport backbone:koverVerify'
+  artifacts: 
+    reports: 
+      junit: backbone/build/test-results/jvmTest/**.xml
+    paths: 
+      - test-report-backbone
+    expose_as: Test and coverage report
+    exclude: []
+    when: always
+'backbone:test:jvm-coverage': 
+  needs: 
+    - 
+      job: 'backbone:test:jvm'
+      artifacts: true
+      optional: false
+  image: 
+    name: 'registry.gitlab.com/haynes/jacoco2cobertura:1.0.8'
+  cache: 
+    paths: []
+  stage: test
+  script: 
+    - python /opt/cover2cover.py test-report-backbone/coverage.xml $CI_BUILDS_DIR/backbone/src/main/kotlin >cobertura.xml
+  artifacts: 
+    reports: 
+      coverage_report: 
+        coverage_format: cobertura
+        path: cobertura.xml
+    paths: []
+    exclude: []
+    when: always
+'spine:test:jvm': 
+  needs: []
+  image: 
+    name: 'openjdk:latest'
+  variables: 
+    GRADLE_USER_HOME: $CI_BUILDS_DIR/.gradle
+  cache: 
+    paths: 
+      - .gradle/wrapper
+      - .gradle/caches
+    key: 
+      files: 
+        - gradle/wrapper/gradle.properties
+  stage: test
+  script: 
+    - './gradlew spine:koverReport spine:koverVerify'
+  artifacts: 
+    reports: 
+      junit: spine/build/test-results/jvmTest/**.xml
+    paths: 
+      - test-report-spine
+    expose_as: Test and coverage report
+    exclude: []
+    when: always
+'spine:test:jvm-coverage': 
+  needs: 
+    - 
+      job: 'spine:test:jvm'
+      artifacts: true
+      optional: false
+  image: 
+    name: 'registry.gitlab.com/haynes/jacoco2cobertura:1.0.8'
+  cache: 
+    paths: []
+  stage: test
+  script: 
+    - python /opt/cover2cover.py test-report-spine/coverage.xml $CI_BUILDS_DIR/spine/src/main/kotlin >cobertura.xml
+  artifacts: 
+    reports: 
+      coverage_report: 
+        coverage_format: cobertura
+        path: cobertura.xml
+    paths: []
+    exclude: []
+    when: always
+'spine-ktor:test:jvm': 
+  needs: []
+  image: 
+    name: 'openjdk:latest'
+  variables: 
+    GRADLE_USER_HOME: $CI_BUILDS_DIR/.gradle
+  cache: 
+    paths: 
+      - .gradle/wrapper
+      - .gradle/caches
+    key: 
+      files: 
+        - gradle/wrapper/gradle.properties
+  stage: test
+  script: 
+    - './gradlew spine-ktor:koverReport spine-ktor:koverVerify'
+  artifacts: 
+    reports: 
+      junit: spine-ktor/build/test-results/jvmTest/**.xml
+    paths: 
+      - test-report-spine-ktor
+    expose_as: Test and coverage report
+    exclude: []
+    when: always
+'spine-ktor:test:jvm-coverage': 
+  needs: 
+    - 
+      job: 'spine-ktor:test:jvm'
+      artifacts: true
+      optional: false
+  image: 
+    name: 'registry.gitlab.com/haynes/jacoco2cobertura:1.0.8'
+  cache: 
+    paths: []
+  stage: test
+  script: 
+    - python /opt/cover2cover.py test-report-spine-ktor/coverage.xml $CI_BUILDS_DIR/spine-ktor/src/main/kotlin >cobertura.xml
+  artifacts: 
+    reports: 
+      coverage_report: 
+        coverage_format: cobertura
+        path: cobertura.xml
+    paths: []
+    exclude: []
+    when: always
+'spine-ktor-client:test:jvm': 
+  needs: []
+  image: 
+    name: 'openjdk:latest'
+  variables: 
+    GRADLE_USER_HOME: $CI_BUILDS_DIR/.gradle
+  cache: 
+    paths: 
+      - .gradle/wrapper
+      - .gradle/caches
+    key: 
+      files: 
+        - gradle/wrapper/gradle.properties
+  stage: test
+  script: 
+    - './gradlew spine-ktor-client:koverReport spine-ktor-client:koverVerify'
+  artifacts: 
+    reports: 
+      junit: spine-ktor-client/build/test-results/jvmTest/**.xml
+    paths: 
+      - test-report-spine-ktor-client
+    expose_as: Test and coverage report
+    exclude: []
+    when: always
+'spine-ktor-client:test:jvm-coverage': 
+  needs: 
+    - 
+      job: 'spine-ktor-client:test:jvm'
+      artifacts: true
+      optional: false
+  image: 
+    name: 'registry.gitlab.com/haynes/jacoco2cobertura:1.0.8'
+  cache: 
+    paths: []
+  stage: test
+  script: 
+    - python /opt/cover2cover.py test-report-spine-ktor-client/coverage.xml $CI_BUILDS_DIR/spine-ktor-client/src/main/kotlin >cobertura.xml
+  artifacts: 
+    reports: 
+      coverage_report: 
+        coverage_format: cobertura
+        path: cobertura.xml
+    paths: []
+    exclude: []
+    when: always
+publish: 
+  before_script: 
+    - pacman -Syuu git jre-openjdk-headless
+    - export JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v java))))
+  needs: []
+  image: 
+    name: 'archlinux:base'
+  variables: 
+    GRADLE_USER_HOME: $CI_BUILDS_DIR/.gradle
+  cache: 
+    paths: 
+      - .gradle/wrapper
+      - .gradle/caches
+    key: 
+      files: 
+        - gradle/wrapper/gradle.properties
+  stage: publish
+  script: 
+    - './gradlew logger:publishToGitLab state:publishToGitLab cache:publishToGitLab backbone:publishToGitLab spine:publishToGitLab spine-ktor:publishToGitLab spine-ktor:publishToGitLab spine-ktor-client:publishToGitLab'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+dokka: 
+  needs: []
+  image: 
+    name: 'openjdk:latest'
+  cache: 
+    paths: []
+  script: 
+    - ./gradlew dokkaHtmlMultiModule
+    - mv build/dokka/htmlMultiModule documentation
+  artifacts: 
+    reports: 
+    paths: 
+      - documentation
+    expose_as: Documentation
+    exclude: []
+    when: always
+pages: 
+  needs: 
+    - 
+      job: dokka
+      artifacts: true
+      optional: false
+  image: 
+    name: 'alpine:latest'
+  cache: 
+    paths: []
+  stage: publish
+  script: 
+    - mkdir -p public
+    - mv documentation public
+  artifacts: 
+    reports: 
+    paths: 
+      - public
+    exclude: []
+    when: always

@@ -1,5 +1,6 @@
 package opensavvy.gitlab.ci
 
+import opensavvy.gitlab.ci.diff.assertEqualsFile
 import opensavvy.gitlab.ci.plugins.Gradle.Companion.gradlew
 import opensavvy.gitlab.ci.script.shell
 import kotlin.test.Test
@@ -9,14 +10,14 @@ class BasicTest {
 	@Test
 	fun basicTest() {
 		@Suppress("UNUSED_VARIABLE")
-		gitlabCi {
+		val pipeline = gitlabCi {
 			val build by stage()
 			val test by stage()
 			val publish by stage()
 
 			val modules = listOf("logger", "backbone")
 			fun Job.publish(module: String, publication: String, repository: String) {
-				image("archlinux:base")
+				image("archlinux")
 
 				script {
 					shell("pacman -Syu --noconfirm git jre-openjdk-headless")
@@ -60,6 +61,8 @@ class BasicTest {
 					}
 				}
 			}
-		}.println()
+		}
+
+		assertEqualsFile("basic.gitlab-ci.yaml", pipeline)
 	}
 }
