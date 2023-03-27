@@ -24,9 +24,7 @@ open class ContainerImage internal constructor(val nameAndVersion: String) : Yam
 		if (other !is ContainerImage) return false
 
 		if (nameAndVersion != other.nameAndVersion) return false
-		if (entrypoint != other.entrypoint) return false
-
-		return true
+		return entrypoint == other.entrypoint
 	}
 
 	override fun hashCode(): Int {
@@ -58,9 +56,7 @@ class ContainerService internal constructor(name: String) : ContainerImage(name)
 		if (!super.equals(other)) return false
 
 		if (alias != other.alias) return false
-		if (command != other.command) return false
-
-		return true
+		return command == other.command
 	}
 
 	override fun hashCode(): Int {
