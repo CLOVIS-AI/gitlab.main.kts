@@ -17,6 +17,15 @@ kotlin {
     jvmToolchain(17)
 }
 
+tasks.test {
+    // Force the environment to ensure the test results are the same on all branches
+    environment(
+        "CI_COMMIT_BRANCH" to "main",
+        "CI_DEFAULT_BRANCH" to "main",
+        "CI_COMMIT_TAG" to "2.0",
+    )
+}
+
 publishing {
     publications {
         create<MavenPublication>("gitlab-ci") {

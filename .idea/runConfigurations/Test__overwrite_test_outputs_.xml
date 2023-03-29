@@ -3,9 +3,6 @@
     <ExternalSystemSettings>
       <option name="env">
         <map>
-          <entry key="CI_COMMIT_BRANCH" value="main" />
-          <entry key="CI_COMMIT_TAG" value="2.0" />
-          <entry key="CI_DEFAULT_BRANCH" value="main" />
           <entry key="tests_override_results" value="true" />
         </map>
       </option>
