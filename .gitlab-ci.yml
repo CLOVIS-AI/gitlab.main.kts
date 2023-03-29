@@ -26,6 +26,13 @@ test:
   script:
     - "./gradlew test"
 
+  artifacts:
+    when: always
+    paths:
+      - build/reports/tests/test
+    reports:
+      junit: build/test-results/test/TEST-*.xml
+
   interruptible: true
 
 publish:
