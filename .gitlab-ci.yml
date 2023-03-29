@@ -4,7 +4,7 @@ stages:
   - deploy
 
 variables:
-  jdk_image: "openjdk:17"
+  jdk_image: "openjdk:17-bullseye"
 
 include:
   - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/gradle.gitlab-ci.yml
