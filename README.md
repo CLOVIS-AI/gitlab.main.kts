@@ -48,3 +48,15 @@ The Yaml syntax shines in this small example, but the real world is much more co
 - You can use any programming abstraction for code reuse: `if`, `for`, functions…
 - Type-safety with powerful auto-completion.
 - API versioning: we can deprecate and remove syntax without breaking your build, upgrade when you're ready to.
+
+## Ki, the Kotlin Interactive Shell
+
+To try the project in [Ki](https://blog.jetbrains.com/kotlin/2021/04/ki-the-next-interactive-shell-for-kotlin/), run:
+
+```text
+[1] :repository https://gitlab.com/api/v4/projects/33995298/packages/maven
+[2] :dependsOn opensavvy:gitlab-ci.kt:VERSION-HERE
+[3] import opensavvy.gitlab.ci.*
+[4] import opensavvy.gitlab.ci.script.*
+[5] import opensavvy.gitlab.ci.plugins.*
+```
