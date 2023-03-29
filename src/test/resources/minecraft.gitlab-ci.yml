@@ -1,0 +1,75 @@
+
+stages: 
+  - docker
+  - deploy
+'k8s:docker:build': 
+  before_script: 
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  needs: []
+  image: 
+    name: 'docker:20.10'
+  cache: 
+    paths: []
+  stage: docker
+  services: 
+    - 
+      name: 'docker:20.10-dind'
+  script: 
+    - 'docker build --pull --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from $CI_REGISTRY_IMAGE/build/k8s:latest --tag $CI_REGISTRY_IMAGE/build/k8s:build-$CI_MERGE_REQUEST_IID -f k8s.dockerfile .'
+    - 'docker push $CI_REGISTRY_IMAGE/build/k8s:build-$CI_MERGE_REQUEST_IID'
+  tags: 
+    - docker
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+'k8s:docker:latest': 
+  before_script: 
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  needs: 
+    - 
+      job: 'k8s:docker:build'
+      artifacts: false
+      optional: false
+  image: 
+    name: 'docker:20.10'
+  cache: 
+    paths: []
+  stage: deploy
+  services: 
+    - 
+      name: 'docker:20.10-dind'
+  script: 
+    - 'docker pull $CI_REGISTRY_IMAGE/build/k8s:build-$CI_MERGE_REQUEST_IID '
+    - 'docker tag $CI_REGISTRY_IMAGE/build/k8s:build-$CI_MERGE_REQUEST_IID $CI_REGISTRY_IMAGE/build/k8slatest'
+    - 'docker push $CI_REGISTRY_IMAGE/build/k8s:latest'
+  tags: 
+    - docker
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+deploy: 
+  before_script: 
+    - 'kubectl config use-context opensavvy/config:opensavvy-agent'
+    - 'helm repo add itzg https://itzg.github.io/minecraft-server-charts'
+    - helm repo update
+  needs: 
+    - 
+      job: 'k8s:docker:build'
+      artifacts: false
+      optional: false
+  image: 
+    name: '$CI_REGISTRY_IMAGE/build/k8s:latest'
+  cache: 
+    paths: []
+  stage: deploy
+  script: 
+    - helm upgrade --install minecraft itzg/minecraft -f minecraft.yml --create-namespace=true --namespace=minecraft --wait --atomic
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always

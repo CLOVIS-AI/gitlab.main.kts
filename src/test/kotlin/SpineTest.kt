@@ -1,5 +1,6 @@
 package opensavvy.gitlab.ci
 
+import opensavvy.gitlab.ci.diff.assertEqualsFile
 import opensavvy.gitlab.ci.plugins.Gradle.Companion.gradlew
 import opensavvy.gitlab.ci.plugins.Gradle.Companion.useGradle
 import opensavvy.gitlab.ci.plugins.Pacman.Companion.pacman
@@ -99,7 +100,7 @@ class SpineTest {
 			}
 		}
 
-		pipeline.println()
+		assertEqualsFile("spine.gitlab-ci.yml", pipeline)
 	}
 
 }

@@ -1,0 +1,69 @@
+
+stages: 
+  - build
+  - test
+  - publish
+'logger:publish': 
+  needs: []
+  image: 
+    name: 'archlinux:latest'
+  cache: 
+    paths: []
+  stage: publish
+  script: 
+    - pacman -Syu --noconfirm git jre-openjdk-headless
+    - './gradlew logger:publishKotlinMultiplatformPublicationToGitLabRepository'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+'backbone:publish': 
+  needs: []
+  image: 
+    name: 'archlinux:latest'
+  cache: 
+    paths: []
+  stage: publish
+  script: 
+    - pacman -Syu --noconfirm git jre-openjdk-headless
+    - './gradlew backbone:publishKotlinMultiplatformPublicationToGitLabRepository'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+dokka: 
+  needs: []
+  cache: 
+    paths: []
+  stage: build
+  script: 
+    - ./gradlew dokkaHtmlMultiModule
+    - mv build/dokka/htmlMultiModule documentation
+  artifacts: 
+    reports: 
+    paths: 
+      - documentation
+    name: Documentation
+    expose_as: Documentation
+    exclude: []
+    when: always
+pages: 
+  needs: 
+    - 
+      job: dokka
+      artifacts: true
+      optional: false
+  cache: 
+    paths: []
+  stage: publish
+  script: 
+    - mkdir -p public
+    - mv documentation public
+  artifacts: 
+    reports: 
+    paths: 
+      - public
+    exclude: []
+    when: always
