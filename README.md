@@ -60,3 +60,7 @@ To try the project in [Ki](https://blog.jetbrains.com/kotlin/2021/04/ki-the-next
 [4] import opensavvy.gitlab.ci.script.*
 [5] import opensavvy.gitlab.ci.plugins.*
 ```
+
+## Licensing
+
+The project is licensed under Apache 2.0. [See the full text here](LICENSE.txt).
