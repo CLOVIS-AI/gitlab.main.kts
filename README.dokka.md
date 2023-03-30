@@ -77,9 +77,74 @@ gitlabCi {
 
 # Package opensavvy.gitlab.ci
 
+The various objects of the GitLab CI API, exposed as Kotlin classes for ease of use.
+
+Most of the objects are identical, or very similar, to their equivalent [in the Yaml format](https://docs.gitlab.com/ee/ci/yaml/).
+Some have been renamed to make them more readable, or restructured for readability.
+
+## Overview
+
+A pipeline is created by the [gitlabCi][opensavvy.gitlab.ci.gitlabCi] function.
+It can be converted to Yaml by calling its [println][opensavvy.gitlab.ci.GitLabCi.println] function:
+
+```kotlin
+gitlabCi {
+	// Declare your pipeline here
+}.println()
+```
+
+A pipeline is composed of [stages][opensavvy.gitlab.ci.Stage], themselves composed of [jobs][opensavvy.gitlab.ci.Job].
+Each job is a unit of work, which will be executed independently by GitLab.
+A job can do anything that you can write a program for.
+Most commonly, jobs use Docker images to provide a ready-to-use environment.
+
+```kotlin
+gitlabCi {
+	// Create two stages: test and deploy
+	val test by stage()
+	val deploy by stage()
+
+	// First job to test our app
+	val build by job(stage = test) {
+		image("ubuntu")
+
+		script {
+			shell("make")
+		}
+
+		artifacts {
+			// The 'build' directory will be stored when the job is over
+			include("build")
+		}
+	}
+
+	if (Value.isDefaultBranch) {
+		val publish by job(stage = deploy) {
+			image("ubuntu")
+
+			// Wait for 'build' to finish before starting,
+			// and download the artifacts it generated
+			dependsOn(build, artifacts = true)
+
+			script {
+				// Add your own logic
+			}
+		}
+	}
+}.println()
+```
+
+## Reading order
+
+Start with [gitlabCi][opensavvy.gitlab.ci.gitlabCi], [stages][opensavvy.gitlab.ci.Stage] and [jobs][opensavvy.gitlab.ci.Job].
+
 # Package opensavvy.gitlab.ci.plugins
 
+Built-in plugins to facilitate using external tools in GitLab CI.
+
 # Package opensavvy.gitlab.ci.script
+
+DSL to declare scripts. See [shell][opensavvy.gitlab.ci.script.shell].
 
 # Package opensavvy.gitlab.ci.utils
 
