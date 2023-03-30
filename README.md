@@ -20,7 +20,7 @@ helloWorld:
 
 We create a `.gitlab-ci.main.kts` file, make it executable, and set its contents:
 
-```kts
+```kotlin
 #!/usr/bin/env kotlin
 
 @file:Repository("https://gitlab.com/api/v4/projects/33995298/packages/maven")

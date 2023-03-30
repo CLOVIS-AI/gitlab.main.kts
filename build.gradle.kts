@@ -1,9 +1,13 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+
 plugins {
     kotlin("jvm")
 
     id("com.palantir.git-version")
     id("com.adarshr.test-logger")
     id("maven-publish")
+
+    id("org.jetbrains.dokka")
 }
 
 group = "opensavvy"
@@ -24,6 +28,12 @@ tasks.test {
         "CI_DEFAULT_BRANCH" to "main",
         "CI_COMMIT_TAG" to "2.0",
     )
+}
+
+tasks.withType<DokkaTask>().configureEach {
+    dokkaSourceSets.configureEach {
+        includes.from("README.dokka.md")
+    }
 }
 
 publishing {
