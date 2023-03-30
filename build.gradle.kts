@@ -4,6 +4,8 @@ plugins {
     id("com.palantir.git-version")
     id("com.adarshr.test-logger")
     id("maven-publish")
+
+    id("org.jetbrains.dokka")
 }
 
 group = "opensavvy"
