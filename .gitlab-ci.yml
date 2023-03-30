@@ -72,3 +72,21 @@ publish:
     - if: $CI_PIPELINE_REF_NAME == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
   interruptible: false
+
+pages:
+  image: alpine:latest
+  stage: deploy
+  dependencies: [ dokka ]
+  needs: [ dokka ]
+
+  script:
+    - mkdir -p public/documentation
+    - mv docs/* public/documentation
+
+  artifacts:
+    paths:
+      - public
+
+  rules:
+    - if: $CI_COMMIT_TAG
+  interruptible: false
