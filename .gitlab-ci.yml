@@ -35,6 +35,30 @@ test:
 
   interruptible: true
 
+dokka:
+  image: $jdk_image
+  stage: build
+  extends: [ .os.gradle ]
+  needs: [ ]
+
+  script:
+    - ./gradlew dokkaHtml
+    - mkdir -p docs
+    - mv build/dokka/html/* docs
+
+  artifacts:
+    paths:
+      - docs
+    expose_as: 'Documentation'
+
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG/documentation
+    url: https://$CI_PROJECT_NAMESPACE.$CI_PAGES_DOMAIN/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/docs/index.html
+    deployment_tier: development
+    auto_stop_in: 1 week
+
+  interruptible: true
+
 publish:
   image: $jdk_image
   stage: deploy
