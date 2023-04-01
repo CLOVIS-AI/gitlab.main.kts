@@ -26,9 +26,7 @@ class Gradle private constructor(private val dsl: CommandDsl, private val isWrap
 
 			cache {
 				include(".gradle/wrapper")
-				include(".gradle/caches")
-
-				keyFile("gradle/wrapper/gradle.properties")
+				keyFile("gradle/wrapper/gradle-wrapper.properties")
 			}
 		}
 
