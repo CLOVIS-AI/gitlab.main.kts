@@ -11,7 +11,6 @@ stages:
   cache: 
     paths: 
       - .gradle/wrapper
-      - .gradle/caches
     key: 
       files: 
         - gradle/wrapper/gradle.properties
@@ -56,7 +55,6 @@ stages:
   cache: 
     paths: 
       - .gradle/wrapper
-      - .gradle/caches
     key: 
       files: 
         - gradle/wrapper/gradle.properties
@@ -101,7 +99,6 @@ stages:
   cache: 
     paths: 
       - .gradle/wrapper
-      - .gradle/caches
     key: 
       files: 
         - gradle/wrapper/gradle.properties
@@ -146,7 +143,6 @@ stages:
   cache: 
     paths: 
       - .gradle/wrapper
-      - .gradle/caches
     key: 
       files: 
         - gradle/wrapper/gradle.properties
@@ -191,7 +187,6 @@ stages:
   cache: 
     paths: 
       - .gradle/wrapper
-      - .gradle/caches
     key: 
       files: 
         - gradle/wrapper/gradle.properties
@@ -236,7 +231,6 @@ stages:
   cache: 
     paths: 
       - .gradle/wrapper
-      - .gradle/caches
     key: 
       files: 
         - gradle/wrapper/gradle.properties
@@ -281,7 +275,6 @@ stages:
   cache: 
     paths: 
       - .gradle/wrapper
-      - .gradle/caches
     key: 
       files: 
         - gradle/wrapper/gradle.properties
@@ -329,7 +322,6 @@ publish:
   cache: 
     paths: 
       - .gradle/wrapper
-      - .gradle/caches
     key: 
       files: 
         - gradle/wrapper/gradle.properties
