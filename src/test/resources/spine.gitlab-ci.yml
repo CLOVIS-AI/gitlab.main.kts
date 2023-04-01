@@ -13,7 +13,7 @@ stages:
       - .gradle/wrapper
     key: 
       files: 
-        - gradle/wrapper/gradle.properties
+        - gradle/wrapper/gradle-wrapper.properties
   stage: test
   script: 
     - './gradlew logger:koverReport logger:koverVerify'
@@ -57,7 +57,7 @@ stages:
       - .gradle/wrapper
     key: 
       files: 
-        - gradle/wrapper/gradle.properties
+        - gradle/wrapper/gradle-wrapper.properties
   stage: test
   script: 
     - './gradlew state:koverReport state:koverVerify'
@@ -101,7 +101,7 @@ stages:
       - .gradle/wrapper
     key: 
       files: 
-        - gradle/wrapper/gradle.properties
+        - gradle/wrapper/gradle-wrapper.properties
   stage: test
   script: 
     - './gradlew cache:koverReport cache:koverVerify'
@@ -145,7 +145,7 @@ stages:
       - .gradle/wrapper
     key: 
       files: 
-        - gradle/wrapper/gradle.properties
+        - gradle/wrapper/gradle-wrapper.properties
   stage: test
   script: 
     - './gradlew backbone:koverReport backbone:koverVerify'
@@ -189,7 +189,7 @@ stages:
       - .gradle/wrapper
     key: 
       files: 
-        - gradle/wrapper/gradle.properties
+        - gradle/wrapper/gradle-wrapper.properties
   stage: test
   script: 
     - './gradlew spine:koverReport spine:koverVerify'
@@ -233,7 +233,7 @@ stages:
       - .gradle/wrapper
     key: 
       files: 
-        - gradle/wrapper/gradle.properties
+        - gradle/wrapper/gradle-wrapper.properties
   stage: test
   script: 
     - './gradlew spine-ktor:koverReport spine-ktor:koverVerify'
@@ -277,7 +277,7 @@ stages:
       - .gradle/wrapper
     key: 
       files: 
-        - gradle/wrapper/gradle.properties
+        - gradle/wrapper/gradle-wrapper.properties
   stage: test
   script: 
     - './gradlew spine-ktor-client:koverReport spine-ktor-client:koverVerify'
@@ -324,7 +324,7 @@ publish:
       - .gradle/wrapper
     key: 
       files: 
-        - gradle/wrapper/gradle.properties
+        - gradle/wrapper/gradle-wrapper.properties
   stage: publish
   script: 
     - './gradlew logger:publishToGitLab state:publishToGitLab cache:publishToGitLab backbone:publishToGitLab spine:publishToGitLab spine-ktor:publishToGitLab spine-ktor:publishToGitLab spine-ktor-client:publishToGitLab'
