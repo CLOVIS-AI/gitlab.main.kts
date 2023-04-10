@@ -2,19 +2,80 @@ package opensavvy.gitlab.ci.plugins
 
 import opensavvy.gitlab.ci.Job
 import opensavvy.gitlab.ci.Variable
+import opensavvy.gitlab.ci.plugins.Docker.Companion.docker
+import opensavvy.gitlab.ci.plugins.Docker.Companion.useContainerRegistry
+import opensavvy.gitlab.ci.plugins.Docker.Companion.useDockerInDocker
 import opensavvy.gitlab.ci.script.CommandDsl
 import opensavvy.gitlab.ci.script.shell
 
+/**
+ * Integrate [Docker](https://www.docker.com/) into your build.
+ *
+ * This plugin is responsible for adding the [docker] extension to scripts:
+ * ```kotlin
+ * val dockerBuild by job {
+ *     useDockerInDocker()
+ *     useContainerRegistry()
+ *
+ *     script {
+ *         docker.build("backend")
+ *     }
+ * }
+ * ```
+ *
+ * ## Job extensions
+ *
+ * This plugin provides the following job extensions:
+ * - [useDockerInDocker]: configure the Docker In Docker service,
+ * - [useContainerRegistry]: logs in to the GitLab Container Registry of the current project.
+ */
 class Docker private constructor(private val dsl: CommandDsl) {
 
+	/**
+	 * Logs in to an arbitrary container registry.
+	 *
+	 * To log in to the GitLab container registry of the current project, use [useContainerRegistry] instead.
+	 *
+	 * @param registry The URL of the registry to log in to.
+	 * @param username The username used to log in to [registry].
+	 * @param password The password used to log in to [registry].
+	 */
 	fun logInToRegistry(registry: String, username: String, password: String) = with(dsl) {
 		shell("echo -n $password | docker login -u $username --password-stdin $registry")
 	}
 
-	fun pull(image: String, version: String, allowFailure: Boolean = false) = with(dsl) {
+	/**
+	 * Pulls a given [image]'s [version].
+	 *
+	 * Note that pulling a previous version of an image before building a new version is useless: Docker's cache is able
+	 * to reuse layers without pulling the image.
+	 *
+	 * @param image The name of the image to pull (e.g. `"alpine"`, `"curlimages/curl"`).
+	 * @param version The version to pull (e.g. `"edge"`).
+	 * @param allowFailure If set to `true`, failing to pull the image will be ignored, and will not fail the current job.
+	 */
+	fun pull(image: String, version: String = "latest", allowFailure: Boolean = false) = with(dsl) {
 		shell("docker pull $image:$version ${if (allowFailure) "|| true" else ""}")
 	}
 
+	/**
+	 * Builds a Docker image from a [Dockerfile](https://docs.docker.com/engine/reference/builder/).
+	 *
+	 * The image will be built but not published anywhere, remember to call [push] after building it.
+	 *
+	 * The images built by this function have the [BuildKit Inline Cache](https://docs.docker.com/engine/reference/commandline/build/#cache-from)
+	 * enabled, and can therefore be used as caching for future builds.
+	 *
+	 * @param image The name of the image that will be built (e.g. `"backend"`).
+	 * @param version The version which will be assigned to the built image.
+	 * By default, the version number is created from the pipeline identifier, to ensure two pipelines do not overwrite each other.
+	 * @param dockerfile The path to the Dockerfile, relative to the current working directory.
+	 * @param context The path of the directory in which the build takes place, relative to the current working directory.
+	 * The files in this directory will be available in the Dockerfile's `COPY` instruction.
+	 * @param previousVersions Version names of previous versions that are candidate for caching.
+	 * If Docker finds identical layers in these images from what is currently being built, it will reuse the existing layers, greatly speeding the build.
+	 * Note that for Docker to use an image as a cache layer, [it must have caching enabled](https://docs.docker.com/engine/reference/commandline/build/#cache-from).
+	 */
 	fun build(
 		image: String,
 		version: String = "build-${Variable.MergeRequest.iid}",
@@ -30,6 +91,16 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		shell("docker build --pull $cacheArgs --tag $image:$version -f $dockerfile $context")
 	}
 
+	/**
+	 * Pushes the [image] to a container registry.
+	 *
+	 * Before pushing to a container registry, you may want to [logInToRegistry].
+	 *
+	 * @param image The name of the image that will be pushed (e.g. `"backend"`).
+	 * The image must exist locally.
+	 * @param version The version of the image to push.
+	 * The default version number for this command is the same as the [build] command's, making it easy to use them together.
+	 */
 	fun push(
 		image: String,
 		version: String = "build-${Variable.MergeRequest.iid}",
@@ -37,6 +108,16 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		shell("docker push $image:$version")
 	}
 
+	/**
+	 * Renames a version of an [image].
+	 *
+	 * This command pulls the [image] for the version [oldVersion], renames it to [newVersion], then finally pushes it back.
+	 *
+	 * @param image The name of the image that will be renamed (e.g. `"backend"`).
+	 * @param oldVersion The version that will be renamed.
+	 * The default version number for this command is the same as the [build] command's, making it easy to use them together.
+	 * @param newVersion The new name of the version.
+	 */
 	fun rename(
 		image: String,
 		oldVersion: String = "build-${Variable.MergeRequest.iid}",
@@ -52,10 +133,16 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		 * Configures the current job to use the `docker` command using Docker In Docker.
 		 *
 		 * For more information, see the [GitLab documentation](https://docs.gitlab.com/ee/ci/docker/using_docker_build.html).
+		 *
+		 * @param dockerVersion The version of Docker to use, which must correspond to a tag of the [official docker image](https://hub.docker.com/_/docker).
+		 * @param dockerInDockerVersion The version of the Docker, which must correspond to a tag of the [official docker image](https://hub.docker.com/_/docker) with DinD enabled.
 		 */
-		fun Job.useDockerInDocker() {
-			image("docker", version = "20.10")
-			service("docker", version = "20.10-dind")
+		fun Job.useDockerInDocker(
+			dockerVersion: String = "20.10",
+			dockerInDockerVersion: String = "$dockerVersion-dind",
+		) {
+			image("docker", version = dockerVersion)
+			service("docker", version = dockerInDockerVersion)
 			tag("docker")
 		}
 
