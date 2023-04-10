@@ -43,7 +43,7 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		newVersion: String = "latest",
 	) = with(dsl) {
 		pull(image, oldVersion)
-		shell("docker tag $image:$oldVersion $image$newVersion")
+		shell("docker tag $image:$oldVersion $image:$newVersion")
 		push(image, newVersion)
 	}
 
