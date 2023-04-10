@@ -75,6 +75,8 @@ class Docker private constructor(private val dsl: CommandDsl) {
 	 * @param previousVersions Version names of previous versions that are candidate for caching.
 	 * If Docker finds identical layers in these images from what is currently being built, it will reuse the existing layers, greatly speeding the build.
 	 * Note that for Docker to use an image as a cache layer, [it must have caching enabled](https://docs.docker.com/engine/reference/commandline/build/#cache-from).
+	 *
+	 * @sample opensavvy.gitlab.ci.plugins.DockerTest.buildImage
 	 */
 	fun build(
 		image: String,
@@ -100,6 +102,8 @@ class Docker private constructor(private val dsl: CommandDsl) {
 	 * The image must exist locally.
 	 * @param version The version of the image to push.
 	 * The default version number for this command is the same as the [build] command's, making it easy to use them together.
+	 *
+	 * @sample opensavvy.gitlab.ci.plugins.DockerTest.buildImage
 	 */
 	fun push(
 		image: String,
@@ -117,6 +121,8 @@ class Docker private constructor(private val dsl: CommandDsl) {
 	 * @param oldVersion The version that will be renamed.
 	 * The default version number for this command is the same as the [build] command's, making it easy to use them together.
 	 * @param newVersion The new name of the version.
+	 *
+	 * @sample opensavvy.gitlab.ci.plugins.DockerTest.buildImage
 	 */
 	fun rename(
 		image: String,
@@ -136,6 +142,8 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		 *
 		 * @param dockerVersion The version of Docker to use, which must correspond to a tag of the [official docker image](https://hub.docker.com/_/docker).
 		 * @param dockerInDockerVersion The version of the Docker, which must correspond to a tag of the [official docker image](https://hub.docker.com/_/docker) with DinD enabled.
+		 *
+		 * @sample opensavvy.gitlab.ci.plugins.DockerTest.buildImage
 		 */
 		fun Job.useDockerInDocker(
 			dockerVersion: String = "20.10",
@@ -150,6 +158,8 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		 * Logs in the current job to the GitLab Container Registry.
 		 *
 		 * For more information, see the [GitLab documentation](https://docs.gitlab.com/ee/user/packages/container_registry/).
+		 *
+		 * @sample opensavvy.gitlab.ci.plugins.DockerTest.buildImage
 		 */
 		fun Job.useContainerRegistry() {
 			beforeScript {
@@ -166,6 +176,8 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		 *
 		 * To use this plugin, the `docker` command must be available to this job.
 		 * To automatically set it up, see [useDockerInDocker].
+		 *
+		 * @sample opensavvy.gitlab.ci.plugins.DockerTest.buildImage
 		 */
 		val CommandDsl.docker get() = Docker(this)
 	}
