@@ -1,0 +1,49 @@
+
+stages: []
+dockerBuild: 
+  before_script: 
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  needs: []
+  image: 
+    name: 'docker:20.10'
+  cache: 
+    paths: []
+  services: 
+    - 
+      name: 'docker:20.10-dind'
+  script: 
+    - 'docker build --pull --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from $CI_REGISTRY_IMAGE/backend:latest --tag $CI_REGISTRY_IMAGE/backend:build-$CI_MERGE_REQUEST_IID -f Dockerfile .'
+    - 'docker push $CI_REGISTRY_IMAGE/backend:build-$CI_MERGE_REQUEST_IID'
+  tags: 
+    - docker
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+docker-publish: 
+  before_script: 
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  needs: 
+    - 
+      job: dockerBuild
+      artifacts: false
+      optional: false
+  image: 
+    name: 'docker:20.10'
+  cache: 
+    paths: []
+  services: 
+    - 
+      name: 'docker:20.10-dind'
+  script: 
+    - 'docker pull $CI_REGISTRY_IMAGE/backend:build-$CI_MERGE_REQUEST_IID '
+    - 'docker tag $CI_REGISTRY_IMAGE/backend:build-$CI_MERGE_REQUEST_IID $CI_REGISTRY_IMAGE/backend:2.0'
+    - 'docker push $CI_REGISTRY_IMAGE/backend:2.0'
+  tags: 
+    - docker
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always

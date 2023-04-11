@@ -42,7 +42,7 @@ stages:
       name: 'docker:20.10-dind'
   script: 
     - 'docker pull $CI_REGISTRY_IMAGE/build/k8s:build-$CI_MERGE_REQUEST_IID '
-    - 'docker tag $CI_REGISTRY_IMAGE/build/k8s:build-$CI_MERGE_REQUEST_IID $CI_REGISTRY_IMAGE/build/k8slatest'
+    - 'docker tag $CI_REGISTRY_IMAGE/build/k8s:build-$CI_MERGE_REQUEST_IID $CI_REGISTRY_IMAGE/build/k8s:latest'
     - 'docker push $CI_REGISTRY_IMAGE/build/k8s:latest'
   tags: 
     - docker

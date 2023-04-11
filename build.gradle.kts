@@ -33,6 +33,7 @@ tasks.test {
 tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
         includes.from("README.dokka.md")
+        samples.from(sourceSets.test.get().allSource)
     }
 }
 
