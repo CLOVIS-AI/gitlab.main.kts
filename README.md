@@ -61,6 +61,10 @@ To try the project in [Ki](https://blog.jetbrains.com/kotlin/2021/04/ki-the-next
 [5] import opensavvy.gitlab.ci.plugins.*
 ```
 
+## Contributing
+
+To learn how to contribute to the project, [please read our wiki](https://gitlab.com/opensavvy/wiki/-/blob/main/README.md).
+
 ## Licensing
 
 The project is licensed under Apache 2.0. [See the full text here](LICENSE.txt).
