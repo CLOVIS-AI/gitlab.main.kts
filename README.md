@@ -2,7 +2,7 @@
 
 > This project is currently experimental.
 > The documentation presents our objective, not necessarily the current state.
-> Please report any issues you encounter [here](https://gitlab.com/opensavvy/gitlab-ci.kt/-/issues/new).
+> Please report any issues you encounter [here](https://gitlab.com/opensavvy/automation/gitlab-ci.kt/-/issues/new).
 
 [GitLab CI](https://docs.gitlab.com/ee/ci/) configuration is written in Yaml, in a [.gitlab-ci.yml](https://docs.gitlab.com/ee/ci/yaml/gitlab_ci_yaml.html) file. As projects grow, Yaml becomes unwieldy and reuse between jobs becomes harder. Since the introduction of CI, GitLab has provided many tools to reduce duplication: [global configuration](https://docs.gitlab.com/ee/ci/yaml/#default), [include](https://docs.gitlab.com/ee/ci/yaml/#include), [anchors](https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html#anchors), [extends](https://docs.gitlab.com/ee/ci/yaml/#extends) and [!reference](https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html#reference-tags). All of these still fall short of a real programming or scripting language, however, while adding yet another syntax that must be learned by users.
 
@@ -24,7 +24,7 @@ We create a `.gitlab-ci.main.kts` file, make it executable, and set its contents
 #!/usr/bin/env kotlin
 
 @file:Repository("https://gitlab.com/api/v4/projects/33995298/packages/maven")
-@file:DependsOn("opensavvy:gitlab-ci.kt:VERSION-HERE") // See https://gitlab.com/opensavvy/gitlab-ci.kt/-/releases
+@file:DependsOn("opensavvy:gitlab-ci.kt:VERSION-HERE") // See https://gitlab.com/opensavvy/automation/gitlab-ci.kt/-/releases
 
 import opensavvy.gitlab.ci.*
 import opensavvy.gitlab.ci.script.*
@@ -61,10 +61,14 @@ To try the project in [Ki](https://blog.jetbrains.com/kotlin/2021/04/ki-the-next
 [5] import opensavvy.gitlab.ci.plugins.*
 ```
 
-## Contributing
-
-To learn how to contribute to the project, [please read our wiki](https://gitlab.com/opensavvy/wiki/-/blob/main/README.md).
-
-## Licensing
+## License
 
 The project is licensed under Apache 2.0. [See the full text here](LICENSE.txt).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+- To learn more about our coding conventions and workflow, see the [OpenSavvy website](https://opensavvy.dev/open-source/index.html).
+- This project is based on the [OpenSavvy Playground](docs/playground/README.md), a collection of preconfigured project templates.
+
+If you don't want to clone this project on your machine, it is also available using [GitPod](https://www.gitpod.io/) and [DevContainer](https://containers.dev/) ([VS Code](https://code.visualstudio.com/docs/devcontainers/containers) • [IntelliJ & JetBrains IDEs](https://www.jetbrains.com/help/idea/connect-to-devcontainer.html)). Don't hesitate to create issues if you have problems getting the project up and running.

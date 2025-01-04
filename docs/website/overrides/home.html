@@ -1,0 +1,63 @@
+{% extends "main.html" %}
+{% block tabs %}
+{{ super() }}
+<style>
+	#hero-page {
+		width: 59rem;
+		max-width: 100%;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	#hero-title {
+		font-size: 3.7rem;
+		margin-top: 10vh;
+		margin-bottom: 1rem;
+		font-weight: bolder;
+	}
+
+	@media screen and (min-width: 60em) {
+		.md-sidebar--secondary {
+			display: none
+		}
+	}
+
+	@media screen and (min-width: 76.25em) {
+		.md-sidebar--primary {
+			display: none
+		}
+	}
+</style>
+
+<section id="hero-page" class="mdx-container">
+	<div class="md-typeset">
+		<div class="mdx-hero">
+			<div class="mdx-hero__content">
+				<h1 id="hero-title">{{ config.site_name }}</h1>
+
+				<p>{{ config.site_description }}</p>
+
+				<p>
+					<a href="{{ config.repo_url }}">View repository</a>
+					•
+					<a href="https://opensavvy.dev">Learn more about us</a>
+					•
+					<a href="https://slack-chats.kotlinlang.org/c/opensavvy">Kotlin Slack</a>
+					•
+					<a href="https://discord.gg/48Wv6BkJx6">Join our Discord</a>
+					•
+					<a href="https://techhub.social/@opensavvy">Mastodon</a>
+					•
+					<a href="https://bsky.app/profile/opensavvy.techhub.social.ap.brid.gy">Bluesky</a>
+				</p>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div style="min-height: 50vh">
+	{{ super() }}
+</div>
+{% endblock %}
