@@ -53,6 +53,8 @@ plugins {
 }
 
 include(
+	"gitlab-ci-kotlin",
+
 	"docs:website",
 	"gradle:templates:template-app",
 	"gradle:templates:template-lib",
