@@ -8,12 +8,11 @@ import opensavvy.gitlab.ci.job
 import opensavvy.gitlab.ci.plugins.Docker.Companion.docker
 import opensavvy.gitlab.ci.plugins.Docker.Companion.useContainerRegistry
 import opensavvy.gitlab.ci.plugins.Docker.Companion.useDockerInDocker
-import org.junit.Test
+import opensavvy.prepared.runner.kotest.PreparedSpec
 
-class DockerTest {
+class DockerTest : PreparedSpec({
 
-	@Test
-	fun buildImage() {
+	test("Build image") {
 		/*
 		 * This example demonstrates how to:
 		 * - Build a Dockerfile into an image on each new commit, reusing the cache from previous builds
@@ -69,4 +68,5 @@ class DockerTest {
 
 		assertEqualsFile("plugins/docker/buildImage.yaml", pipeline)
 	}
-}
+
+})

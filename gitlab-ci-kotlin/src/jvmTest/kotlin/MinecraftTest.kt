@@ -6,14 +6,13 @@ import opensavvy.gitlab.ci.plugins.Docker.Companion.useContainerRegistry
 import opensavvy.gitlab.ci.plugins.Docker.Companion.useDockerInDocker
 import opensavvy.gitlab.ci.plugins.Helm.Companion.helm
 import opensavvy.gitlab.ci.script.shell
-import kotlin.test.Test
+import opensavvy.prepared.runner.kotest.PreparedSpec
 
 // Inspired by https://gitlab.com/opensavvy/minecraft-server/-/blob/main/.gitlab-ci.yml
 
-class MinecraftTest {
+class MinecraftTest : PreparedSpec({
 
-	@Test
-	fun minecraft() {
+	test("Generate a simple CI file inspired by our Minecraft server") {
 		val ci = gitlabCi {
 			val dockerStage = stage("docker")
 			val deploy by stage()
@@ -68,4 +67,5 @@ class MinecraftTest {
 
 		assertEqualsFile("minecraft.gitlab-ci.yml", ci)
 	}
-}
+
+})

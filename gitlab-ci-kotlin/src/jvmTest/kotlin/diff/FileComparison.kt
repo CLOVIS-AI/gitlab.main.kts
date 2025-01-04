@@ -1,10 +1,10 @@
 package opensavvy.gitlab.ci.diff
 
 import opensavvy.gitlab.ci.YamlExport
+import org.junit.jupiter.api.Assertions.assertEquals
 import java.io.File
-import kotlin.test.assertEquals
 
-private val testRoot = File("src/test/resources")
+private val testRoot = File("src/jvmTest/resources")
 private val overrideOutputs = System.getenv("tests_override_results").toBoolean()
 
 fun assertEqualsFile(filename: String, data: String) {

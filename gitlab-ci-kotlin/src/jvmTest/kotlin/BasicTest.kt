@@ -3,13 +3,11 @@ package opensavvy.gitlab.ci
 import opensavvy.gitlab.ci.diff.assertEqualsFile
 import opensavvy.gitlab.ci.plugins.Gradle.Companion.gradlew
 import opensavvy.gitlab.ci.script.shell
-import kotlin.test.Test
+import opensavvy.prepared.runner.kotest.PreparedSpec
 
-class BasicTest {
+class BasicTest : PreparedSpec({
 
-	@Test
-	fun basicTest() {
-		@Suppress("UNUSED_VARIABLE")
+	test("Generate a basic CI inspired by Pedestal") {
 		val pipeline = gitlabCi {
 			val build by stage()
 			val test by stage()
@@ -65,4 +63,5 @@ class BasicTest {
 
 		assertEqualsFile("basic.gitlab-ci.yaml", pipeline)
 	}
-}
+
+})

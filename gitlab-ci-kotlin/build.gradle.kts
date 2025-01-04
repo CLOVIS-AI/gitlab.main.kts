@@ -26,3 +26,11 @@ library {
 		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
 	}
 }
+
+tasks.withType<Test> {
+	environment(
+		"CI_COMMIT_BRANCH" to "main",
+		"CI_DEFAULT_BRANCH" to "main",
+		"CI_COMMIT_TAG" to "2.0",
+	)
+}

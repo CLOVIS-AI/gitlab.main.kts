@@ -1,13 +1,12 @@
 package opensavvy.gitlab.ci.yaml
 
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import org.intellij.lang.annotations.Language
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 
-class YamlDataTest {
+class YamlDataTest : PreparedSpec({
 
-	@Test
-	fun singleLineString() {
+	test("Single line string") {
 		val text = Yaml.Scalar.StringLiteral("Hello world")
 
 		assertEqualsYaml("""
@@ -16,8 +15,7 @@ class YamlDataTest {
 		)
 	}
 
-	@Test
-	fun multiLineString() {
+	test("Multi-line string") {
 		val text = Yaml.Scalar.StringLiteral("""
 			Hello
 			World
@@ -33,8 +31,7 @@ class YamlDataTest {
 		)
 	}
 
-	@Test
-	fun list() {
+	test("List") {
 		val list = Yaml.Collection.ListLiteral(
 			listOf(
 				Yaml.Scalar.StringLiteral("Item 1"),
@@ -53,8 +50,7 @@ class YamlDataTest {
 			""", list)
 	}
 
-	@Test
-	fun map() {
+	test("Map") {
 		val map = Yaml.Collection.MapLiteral(
 			Yaml.Scalar.StringLiteral("key") to Yaml.Scalar.StringLiteral("value"),
 			Yaml.Scalar.StringLiteral("a number value") to Yaml.Scalar.IntegerLiteral(100),
@@ -79,10 +75,11 @@ class YamlDataTest {
 """, map)
 	}
 
-	fun assertEqualsYaml(@Language("yaml") expected: String, actual: Yaml) {
-		val generated = actual.toYamlString()
-		assertEquals(expected.trimIndent(), generated.removeSuffix("\n"))
+})
 
-		println(generated)
-	}
+private fun assertEqualsYaml(@Language("yaml") expected: String, actual: Yaml) {
+	val generated = actual.toYamlString()
+	assertEquals(expected.trimIndent(), generated.removeSuffix("\n"))
+
+	println(generated)
 }
