@@ -27,16 +27,30 @@ import opensavvy.gitlab.ci.yaml.yamlMap
 /**
  * A single execution step in a [pipeline][GitLabCi].
  *
- * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/jobs/).
+ * Jobs are instantiated using the [job] factory. See its documentation for more information.
  */
 class Job internal constructor(
+	/**
+	 * The name of this job, as it appears in the GitLab UI.
+	 */
 	val name: String,
+	/**
+	 * The [Stage] this job is a part of.
+	 *
+	 * Stages are a simple way to group jobs and execution order.
+	 * However, jobs can ignore this order, for example by using [dependsOn].
+	 *
+	 * If set to `null`, see the [official documentation](https://docs.gitlab.com/ee/ci/yaml/#stage).
+	 */
 	val stage: Stage? = null,
 ) : YamlExport {
 
 	//region Image & services
 
-	var image: ContainerImage? = null
+	/**
+	 * The container image used to execute this job, if any.
+	 */
+	private var image: ContainerImage? = null
 		private set(value) {
 			if (field != null && field != value)
 				System.err.println("Job '$name': setting the image to $value overrides previous setting $field")
@@ -46,25 +60,35 @@ class Job internal constructor(
 	/**
 	 * The container image used to execute this job.
 	 *
-	 * Example:
+	 * ### Example
+	 *
 	 * ```kotlin
 	 * val ubuntu by job {
 	 *     image("ubuntu")
+	 *
+	 *     script {
+	 *         shell("echo 'Hello world!'")
+	 *     }
 	 * }
 	 * ```
 	 *
-	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#image).
+	 * In this example, the runner will download the latest Ubuntu image and run the bash script that prints `Hello world!`.
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#image).
 	 */
 	fun image(name: String, version: String = "latest", configuration: ContainerImage.() -> Unit = {}) {
 		image = ContainerImage("$name:$version").apply(configuration)
 	}
 
-	val services = HashSet<ContainerService>()
+	private val services = HashSet<ContainerService>()
 
 	/**
 	 * Additional container images used by this job.
 	 *
-	 * Example:
+	 * ### Example
+	 *
 	 * ```kotlin
 	 * val docker by job {
 	 *     image("docker")
@@ -72,7 +96,9 @@ class Job internal constructor(
 	 * }
 	 * ```
 	 *
-	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#services).
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#services).
 	 */
 	fun service(name: String, version: String = "latest", configuration: ContainerService.() -> Unit = {}) {
 		services += ContainerService("$name:$version").apply(configuration)
@@ -81,12 +107,13 @@ class Job internal constructor(
 	//endregion
 	//region Script
 
-	val script = ArrayList<Command>()
+	private val script = ArrayList<Command>()
 
 	/**
 	 * Adds commands to execute in this job.
 	 *
-	 * Example:
+	 * ### Example
+	 *
 	 * ```kotlin
 	 * val test by job {
 	 *     script {
@@ -103,18 +130,40 @@ class Job internal constructor(
 	 * Calling `script` multiple times executes the commands after the previous ones (the execution happens in the same order as in the source code).
 	 *
 	 * See [CommandDsl] to see what functions are available in `script`.
-	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#script).
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#script).
 	 */
 	fun script(block: CommandDsl.() -> Unit) {
 		CommandDsl(script).block()
 	}
 
-	val beforeScript = ArrayList<Command>()
+	private val beforeScript = ArrayList<Command>()
 
 	/**
 	 * Adds commands to execute before the main script of this job.
 	 *
-	 * `beforeScript` has the same behavior as [script].
+	 * `beforeScript` has the same syntax as [script].
+	 *
+	 * The main usage of `beforeScript` is the ability to declare a script that will execute before all already-registered
+	 * calls to [script].
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     beforeScript {
+	 *         shell("apt upgrade")
+	 *     }
+	 *
+	 *     script {
+	 *         shell("echo Hello world")
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
 	 *
 	 * Read more about the differences between [script] and `beforeScript` in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#before_script).
 	 */
@@ -122,12 +171,31 @@ class Job internal constructor(
 		CommandDsl(beforeScript).block()
 	}
 
-	val afterScript = ArrayList<Command>()
+	private val afterScript = ArrayList<Command>()
 
 	/**
 	 * Adds commands to execute after the main script of this job.
 	 *
-	 * `afterScript` has the same behavior as [script].
+	 * `afterScript` has the same syntax as [script].
+	 *
+	 * The main usage of `afterScript` is the ability to declare a script that will execute after all [script] calls,
+	 * even those that haven't happened yet.
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     script {
+	 *         shell("make")
+	 *     }
+	 *
+	 *     afterScript {
+	 *         // Something that executes after all scripts
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
 	 *
 	 * Read more about the differences between [script] and `afterScript` in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#after_script).
 	 */
@@ -138,13 +206,16 @@ class Job internal constructor(
 	//endregion
 	//region Tags
 
-	val tags = HashSet<String>()
+	private val tags = HashSet<String>()
 
 	/**
 	 * Adds a tag to this job.
 	 *
-	 * Only runners that are possess the same tag(s) will be able to execute this job.
-	 * For example, to run a job only on runners that run on ArchLinux and have Docker:
+	 * Only runners that possess the same tag(s) will be able to execute this job.
+	 *
+	 * ### Example
+	 *
+	 * To run a job only on runners that are configured with the tags ArchLinux and Docker:
 	 * ```kotlin
 	 * val test by job {
 	 *    tag("archlinux")
@@ -153,9 +224,13 @@ class Job internal constructor(
 	 *    script { … }
 	 * }
 	 * ```
-	 * The tags themselves do not have any special meaning.
 	 *
-	 * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#tags).
+	 * The tags themselves do not have any special meaning, though official GitLab Runners use a few standard ones.
+	 * Each official runner is listed with its tags in the project settings' runner list.
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#tags).
 	 */
 	fun tag(name: String) {
 		tags += name
@@ -164,15 +239,43 @@ class Job internal constructor(
 	//endregion
 	//region Dependencies
 
-	val needs = ArrayList<Depends>()
+	private val needs = ArrayList<Depends>()
 
 	/**
 	 * This job will wait until [job] has terminated.
 	 *
 	 * By default, jobs start immediately.
 	 *
-	 * If [artifacts] is `true`, the artifacts generated by [job] will be downloaded by the current job.
-	 * If [optional] is `true`, this job will run even if [job] was excluded from this pipeline (using `rules`, `only` or `when`).
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * gitlabCi {
+	 *     val compile by job {
+	 *         script {
+	 *             shell("make")
+	 *         }
+	 *
+	 *         artifacts {
+	 *             include("output")
+	 *         }
+	 *     }
+	 *
+	 *     val test by job {
+	 *         dependsOn(compile, artifacts = true)
+	 *
+	 *         script {
+	 *             shell("make test")
+	 *         }
+	 *     }
+	 * }.println()
+	 * ```
+	 *
+	 * ### Official documentation
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#needs)
+	 *
+	 * @param artifacts If set to `true`, the artifacts generated by [job] will be downloaded before the current job starts.
+	 * @param optional If set to `true`, the job will run even if [job] was excluded from this pipeline (using `rules`, `only` or `when`).
 	 */
 	fun dependsOn(job: Job, artifacts: Boolean = false, optional: Boolean = false) {
 		needs += Depends(job, artifacts, optional)
@@ -181,8 +284,29 @@ class Job internal constructor(
 	//endregion
 	//region Variables
 
-	val variables = HashMap<String, String>()
+	private val variables = HashMap<String, String>()
 
+	/**
+	 * Declares an environment variable that will be available for the entire length of the job.
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     variable("version", "1.0")
+	 *
+	 *     script {
+	 *         shell("echo \$version")
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#job-variables)
+	 *
+	 * @see Variable Access predefined CI/CD variables.
+	 */
 	fun variable(name: String, value: String) {
 		variables[name] = value
 	}
@@ -190,14 +314,73 @@ class Job internal constructor(
 	//endregion
 	//region Cache & artifacts
 
-	val cache = Cache()
+	private val cache = Cache()
 
+	/**
+	 * Declares paths that will be reused between different jobs, even if they are of different pipelines.
+	 *
+	 * Note that this is very easy to misuse in ways that make the pipeline less reliable or slower.
+	 * In particular, avoid caching `node_modules` or `~/.gradle` or other dependency download caches if you're using
+	 * GitLab Shared Runners, as downloading the cached dependencies can easily become slower than downloading the
+	 * dependencies themselves.
+	 *
+	 * Instead, use systems like [Gradle's remote build cache](https://docs.gradle.org/current/userguide/build_cache.html),
+	 * [GitLab's dependency proxy](https://docs.gitlab.com/ee/user/packages/dependency_proxy/).
+	 *
+	 * To learn more about configuring the cache, see [Cache].
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     cache {
+	 *         include(".gradle/wrapper")
+	 *         keyFile("gradle/wrapper/gradle-wrapper.properties")
+	 *     }
+	 *
+	 *     script {
+	 *         echo("./gradlew test")
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * This particular example is inspired by the [Gradle plugin][opensavvy.gitlab.ci.plugins.Gradle], which we recommend
+	 * instead of implementing this manually.
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#cache)
+	 */
 	fun cache(configuration: Cache.() -> Unit) {
 		cache.apply(configuration)
 	}
 
-	val artifacts = Artifacts()
+	private val artifacts = Artifacts()
 
+	/**
+	 * Declares paths that will be saved at the end of the job, and can later be consumed by other jobs in the same
+	 * pipeline.
+	 *
+	 * To learn more about configuring artifacts, see [Artifacts].
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     script {
+	 *         shell("echo '1.1' >> version.txt")
+	 *     }
+	 *
+	 *     artifacts {
+	 *         include("version.txt")
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#artifacts)
+	 */
 	fun artifacts(configuration: Artifacts.() -> Unit) {
 		artifacts.apply(configuration)
 	}
@@ -241,10 +424,66 @@ class Job internal constructor(
 	}
 }
 
+/**
+ * Declares a new [Job] in the current [pipeline][gitlabCi].
+ *
+ * A job is a unit of work in a pipeline: each job is executed by a runner.
+ * Jobs can have [dependencies][Job.dependsOn], [artifacts][Job.artifacts] and more.
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * gitlabCi {
+ *     val build by job {
+ *         useGradle()
+ *
+ *         script {
+ *             gradlew.task("build")
+ *         }
+ *     }
+ * }.println()
+ * ```
+ *
+ * ### External documentation
+ *
+ * - [What are jobs?](https://docs.gitlab.com/ee/ci/jobs)
+ *
+ * @param name The name of the job. See [Job.name].
+ * If using the `by` syntax, the default name is the name of the variable the job is assigned to.
+ * @param stage The [stage][Stage] this job is part of. If unset, see [the official documentation](https://docs.gitlab.com/ee/ci/yaml/#stage).
+ */
 fun GitLabCi.job(name: String, stage: Stage? = null, block: Job.() -> Unit) = Job(name, stage)
 	.apply(block)
 	.also { jobs += it }
 
+/**
+ * Declares a new [Job] in the current [pipeline][gitlabCi].
+ *
+ * A job is a unit of work in a pipeline: each job is executed by a runner.
+ * Jobs can have [dependencies][Job.dependsOn], [artifacts][Job.artifacts] and more.
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * gitlabCi {
+ *     val build by job {
+ *         useGradle()
+ *
+ *         script {
+ *             gradlew.task("build")
+ *         }
+ *     }
+ * }.println()
+ * ```
+ *
+ * ### External documentation
+ *
+ * - [What are jobs?](https://docs.gitlab.com/ee/ci/jobs)
+ *
+ * @param name The name of the job. See [Job.name].
+ * If using the `by` syntax, the default name is the name of the variable the job is assigned to.
+ * @param stage The [stage][Stage] this job is part of. See [Job.stage].
+ */
 fun GitLabCi.job(name: String? = null, stage: Stage? = null, block: Job.() -> Unit = {}) =
 	generateReadOnlyDelegateProvider { parent, property ->
 		parent.job(name ?: property.name, stage, block)
