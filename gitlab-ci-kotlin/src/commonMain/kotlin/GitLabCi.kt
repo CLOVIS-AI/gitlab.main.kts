@@ -25,7 +25,7 @@ import opensavvy.gitlab.ci.yaml.yamlMap
  *
  * A pipeline is split into multiple [stages][Stage], each split into multiple [jobs][Job].
  *
- * To create a pipeline, use the factory function:
+ * To create a pipeline, use the [factory function][GitLabCi]:
  * ```kotlin
  * val pipeline = gitlabCi {
  *     // Declare the different stages
@@ -54,5 +54,24 @@ class GitLabCi : YamlExport {
 
 /**
  * Convenience factory function for [GitLabCi].
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * gitlabCi {
+ *     val test by stage()
+ *
+ *     val build by job(stage = test) {
+ *         useGradle()
+ *
+ *         script {
+ *             gradlew.task("build")
+ *         }
+ *     }
+ * }.println()
+ * ```
+ *
+ * @see stage Declare a [Stage]
+ * @see job Declare a [Job]
  */
 fun gitlabCi(block: GitLabCi.() -> Unit) = GitLabCi().apply(block)
