@@ -1,7 +1,7 @@
-site_name: OpenSavvy Playground
+site_name: .gitlab-ci.main.kts
 site_author: OpenSavvy & contributors
 site_description: >
-  Project template with CI/CD and IDE configuration.
+  Generate your GitLab CI pipeline with Kotlin.
 
 theme:
   name: material
@@ -85,11 +85,8 @@ use_directory_urls: false
 nav:
   - Home: index.md
 
-  - Getting started: []
-
-  - Module1: []
-
-  - Module2: []
+  - Getting started:
+      - tutorials/index.md
 
 # !!! EMBEDDED DOKKA START, DO NOT COMMIT !!! #
 # !!! EMBEDDED DOKKA END, DO NOT COMMIT !!! #
