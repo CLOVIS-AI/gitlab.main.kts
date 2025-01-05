@@ -5,5 +5,5 @@ plugins {
 
 dependencies {
 	// List the 'library' projects
-	// dokka(projects.core)
+	dokka(projects.gitlabCiKotlin)
 }

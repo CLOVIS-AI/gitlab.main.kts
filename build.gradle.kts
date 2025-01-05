@@ -21,7 +21,7 @@ plugins {
 
 dependencies {
 	// List the 'library' projects
-	// dokka(projects.core)
+	dokka(projects.gitlabCiKotlin)
 }
 
 // region Check the users of the project didn't forget to rename the group
