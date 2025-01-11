@@ -1,14 +1,20 @@
 stages:
-  - build
-  - test
-  - deploy
-
-variables:
-  jdk_image: "openjdk:17-bullseye"
+  - docker  # create images that are needed by the rest of the build
+  - build   # create any outputs of the project (binaries, containers, charts…)
+  - test    # all quality checks
+  - deploy  # export the outputs (publish to an artifact registry, deploy on a server…)
 
 include:
-  - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/gradle.gitlab-ci.yml
   - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/version.gitlab-ci.yml
+  - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/mirror.gitlab-ci.yml
+  - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/gradle.gitlab-ci.yml
+  - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/docker.gitlab-ci.yml
+
+  - local: docs/website/.gitlab-ci.yml
+
+variables:
+  # https://gitlab.com/opensavvy/automation/containers
+  ci_containers: 0.6.0
 
 workflow:
   rules:
@@ -17,71 +23,368 @@ workflow:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
 
-test:
-  image: $jdk_image
-  stage: test
+# region Kotlin Multiplatform
+
+.kotlin-jvm:
   extends: [ .os.gradle ]
-  needs: [ ]
+  image: registry.gitlab.com/opensavvy/automation/containers/java:$ci_containers
+  needs: [ os.version ]
+
+.kotlin-js-browser:
+  extends: [ .os.gradle ]
+  image: registry.gitlab.com/opensavvy/automation/containers/chromium:$ci_containers
+  needs: [ os.version ]
+
+.kotlin-js-node:
+  extends: [ .os.gradle ]
+  image: registry.gitlab.com/opensavvy/automation/containers/nodejs:$ci_containers
+  needs: [ os.version ]
+
+.kotlin-native-linuxX64:
+  extends: [ .os.gradle ]
+  image: registry.gitlab.com/opensavvy/automation/containers/java:$ci_containers
+  needs: [ os.version ]
+
+.kotlin-native-iosArm64:
+  extends: [ .os.gradle ]
+  image: macos-14-xcode-15
+  needs: [ os.version ]
+
+  before_script:
+    - xcodebuild -downloadPlatform iOS
+  tags:
+    - saas-macos-medium-m1
+
+  retry:
+    max: 1
+    exit_codes:
+      - 1  # Sometimes, the runner breaks and doesn't actually run the test
+
+# endregion
+# region Check
+
+check[jvm]:
+  extends: [ .kotlin-jvm ]
+  stage: test
 
   script:
-    - "./gradlew test"
+    - >
+      ./gradlew check
+      :koverLog
+      :koverHtmlReport
+      -x jsBrowserTest
+      -x jsNodeTest
+      -x wasmJsBrowserTest
+      -x wasmJsNodeTest
+      -x wasmWasiNodeTest
+      -x linuxX64Test
+      -x mingwX64Test
+      -x macosX64Test
+      -x macosArm64Test
+      -x iosX64Test
+      -x iosSimulatorArm64Test
+      -x watchosX64Test
+      -x tvosX64Test
+      koverVerify --rerun
+      -PappVersion=$project_version
 
+  after_script:
+    - mkdir -p jvm-cover-report
+    - mv build/reports/kover/html/* jvm-cover-report
+
+  coverage: '/application line coverage: (\d+\.?\d*%)/'
   artifacts:
-    when: always
     paths:
-      - build/reports/tests/test
-    reports:
-      junit: build/test-results/test/TEST-*.xml
+      - jvm-cover-report
+    expose_as: JVM code coverage
+  interruptible: true
+
+check[jsBrowser]:
+  extends: [ .kotlin-js-browser ]
+  stage: test
+
+  script:
+    - >
+      ./gradlew jsBrowserTest wasmJsBrowserTest
+      -PappVersion=$project_version
 
   interruptible: true
+
+check[nodeJs]:
+  extends: [ .kotlin-js-node ]
+  stage: test
+
+  script:
+    - >
+      ./gradlew jsNodeTest wasmJsNodeTest wasmWasiNodeTest
+      -PappVersion=$project_version
+
+  interruptible: true
+
+check[linuxX64]:
+  extends: [ .kotlin-native-linuxX64 ]
+  stage: test
+
+  script:
+    - >
+      ./gradlew linuxX64Test mingwX64Test
+      -PappVersion=$project_version
+
+  interruptible: true
+
+check[iosArm64]:
+  extends: [ .kotlin-native-iosArm64 ]
+  stage: test
+
+  script:
+    - >
+      ./gradlew 
+      iosSimulatorArm64Test 
+      watchosSimulatorArm64Test
+      --no-configuration-cache
+      -PappVersion=$project_version
+
+  interruptible: true
+
+# endregion
+# region Publishing
+
+publish-maven:gitlab:
+  extends: [ .kotlin-jvm ]
+  needs:
+    - os.version
+  stage: deploy
+
+  script:
+    - >
+      ./gradlew publishAllPublicationsToGitLabRepository
+      --no-configuration-cache
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_GITLAB == "no"
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+publish-maven:gitlab[ios]:
+  extends: [ .kotlin-native-iosArm64 ]
+  needs:
+    - os.version
+  stage: deploy
+
+  script:
+    - >
+      ./gradlew
+      publishIosArm64PublicationToGitLabRepository
+      publishIosSimulatorArm64PublicationToGitLabRepository
+      publishIosX64PublicationToGitLabRepository
+      publishMacosX64PublicationToGitLabRepository
+      publishMacosArm64PublicationToGitLabRepository
+      publishWatchosX64PublicationToGitLabRepository
+      publishWatchosArm32PublicationToGitLabRepository
+      publishWatchosArm64PublicationToGitLabRepository
+      publishWatchosSimulatorArm64PublicationToGitLabRepository
+      publishTvosX64PublicationToGitLabRepository
+      publishTvosArm64PublicationToGitLabRepository
+      publishTvosSimulatorArm64PublicationToGitLabRepository
+      --no-configuration-cache
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_GITLAB == "no" || $PUBLISH_MAVEN_IOS == "no"
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+publish-maven:central:initialize:
+  extends: [ .kotlin-jvm ]
+  needs:
+    - os.version
+  stage: deploy
+
+  script:
+    - >
+      ./gradlew initializeSonatypeStagingRepository
+      --no-configuration-cache
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $OSSRH_USERNAME == null || $OSSRH_PASSWORD == null
+      when: never
+    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_CENTRAL == "no"
+      when: never
+    - if: $CI_COMMIT_TAG
+
+publish-maven:central:
+  extends: [ .kotlin-jvm ]
+  needs:
+    - os.version
+    - publish-maven:central:initialize
+  stage: deploy
+
+  script:
+    - export SIGNING_KEY_RING=$(mktemp)
+    - <"$SIGNING_KEY_RING_B64" base64 -d >"$SIGNING_KEY_RING"
+    - >
+      ./gradlew findSonatypeStagingRepository publishToSonatype
+      -x initializeSonatypeStagingRepository
+      --no-configuration-cache
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $OSSRH_USERNAME == null || $OSSRH_PASSWORD == null
+      when: never
+    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_CENTRAL == "no"
+      when: never
+    - if: $CI_COMMIT_TAG
+
+publish-maven:central[ios]:
+  extends: [ .kotlin-native-iosArm64 ]
+  needs:
+    - os.version
+    - publish-maven:central:initialize
+    - publish-maven:central
+  stage: deploy
+
+  script:
+    - export SIGNING_KEY_RING=$(mktemp)
+    - <"$SIGNING_KEY_RING_B64" base64 -d >"$SIGNING_KEY_RING"
+    - >
+      ./gradlew findSonatypeStagingRepository publishToSonatype
+      -x initializeSonatypeStagingRepository
+      --no-configuration-cache
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $OSSRH_USERNAME == null || $OSSRH_PASSWORD == null
+      when: never
+    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_CENTRAL == "no" || $PUBLISH_MAVEN_IOS == "no"
+      when: never
+    - if: $CI_COMMIT_TAG
+
+publish-maven:central:release:
+  extends: [ .kotlin-jvm ]
+  needs:
+    - job: os.version
+    - job: publish-maven:central
+    - job: publish-maven:central[ios]
+      optional: true
+  stage: deploy
+
+  script:
+    - >
+      ./gradlew findSonatypeStagingRepository closeAndReleaseSonatypeStagingRepository
+      --no-configuration-cache
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $OSSRH_USERNAME == null || $OSSRH_PASSWORD == null
+      when: never
+    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_CENTRAL == "no"
+      when: never
+    - if: $CI_COMMIT_TAG
+
+# endregion
+# region API documentation
 
 dokka:
-  image: $jdk_image
+  extends: [ .kotlin-jvm ]
   stage: build
-  extends: [ .os.gradle ]
-  needs: [ ]
+  needs: [ os.version ]
 
   script:
-    - ./gradlew dokkaHtml
-    - mkdir -p docs
-    - mv build/dokka/html/* docs
+    - >
+      ./gradlew :dokkaGeneratePublicationHtml
+      --no-configuration-cache
+      -PappVersion=$project_version
+
+  after_script:
+    - mkdir -p api-docs
+    - mv build/dokka/html/* api-docs
+    - PREFIX="$CI_PROJECT_ROOT_NAMESPACE/"
+    - echo "URL=https://$CI_PROJECT_ROOT_NAMESPACE.$CI_PAGES_DOMAIN/-/${CI_PROJECT_PATH//$PREFIX}/-/jobs/$CI_JOB_ID/artifacts/api-docs/index.html" >>deploy.env
 
   artifacts:
     paths:
-      - docs
-    expose_as: 'Documentation'
-
+      - api-docs
+    reports:
+      dotenv: deploy.env
   environment:
-    name: review/$CI_COMMIT_REF_SLUG/documentation
-    url: https://$CI_PROJECT_NAMESPACE.$CI_PAGES_DOMAIN/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/docs/index.html
+    name: review/$CI_COMMIT_REF_SLUG/api-docs
+    url: $URL
     deployment_tier: development
-    auto_stop_in: 1 week
 
   interruptible: true
 
-publish:
-  image: $jdk_image
-  stage: deploy
-  extends: [ .os.gradle ]
-  needs: [ test ]
+# endregion
+# region Qodana
 
+qodana[jvm]:
+  needs: [ ]
+  image:
+    name: jetbrains/qodana-jvm-community
+    entrypoint: [ "" ]
   script:
-    - "./gradlew publishAllPublicationsToGitLabRepository"
+    - qodana
+  artifacts:
+    paths:
+      - qodana
+  rules:
+    - if: $QODANA_TOKEN == null
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      allow_failure: true
+    - if: $CI_COMMIT_TAG
+      allow_failure: true
+    - when: manual
+      allow_failure: true
+
+# endregion
+# region Automatically mirror the previous layer of the playground
+
+mirror-playground:
+  stage: deploy
+  extends: [ .os.mirror ]
+  needs: [ ]
+
+  variables:
+    url: "$playground_parent"
+    name: "$playground_parent_name"
+    key: "$playground_mirroring_key"
+    key_public: "$playground_mirroring_key_public"
 
   rules:
-    - if: $CI_PIPELINE_REF_NAME == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
-  interruptible: false
+    - if: $playground_parent == null || $playground_parent_name == null
+      when: never
+    - if: $playground_mirroring_key == null || $playground_mirroring_key_public == null
+      when: never
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+    - when: manual
+      allow_failure: true
+
+# endregion
+# region GitLab Pages
 
 pages:
   image: alpine:latest
   stage: deploy
-  dependencies: [ dokka ]
-  needs: [ dokka ]
+  needs:
+    - job: mkdocs
+      artifacts: true
+    - job: dokka
+      artifacts: true
 
   script:
-    - mkdir -p public/documentation
-    - mv docs/* public/documentation
+    - mkdir -p public
+    - mv docs-website public/docs
+    - mv api-docs public
 
   artifacts:
     paths:
@@ -90,3 +393,5 @@ pages:
   rules:
     - if: $CI_COMMIT_TAG
   interruptible: false
+
+# endregion

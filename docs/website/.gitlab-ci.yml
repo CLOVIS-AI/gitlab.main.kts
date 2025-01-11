@@ -1,0 +1,32 @@
+
+mkdocs:
+  image: registry.gitlab.com/opensavvy/automation/containers/mkdocs:$ci_containers
+  stage: build
+  extends: [ .os.gradle ]
+  needs: [ os.version ]
+
+  before_script:
+    - ./gradlew docs:website:embedDokkaIntoMkDocs -PappVersion=$project_version
+    - cd docs/website
+    - ls
+    - 'echo "repo_url: $CI_PROJECT_URL">>mkdocs.yml'
+    - 'echo "repo_name: $CI_PROJECT_TITLE">>mkdocs.yml'
+    - 'echo "repo_pages: $CI_PAGES_URL">>mkdocs.yml'
+
+  script:
+    - pwd
+    - mkdocs build --site-dir ../../docs-website
+
+  after_script:
+    - echo "URL=$(.gitlab/ci/review-url.sh docs-website/index.html)" >>docs.env
+
+  artifacts:
+    paths:
+      - docs-website
+    reports:
+      dotenv: docs.env
+
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG/docs
+    url: $URL
+    deployment_tier: development

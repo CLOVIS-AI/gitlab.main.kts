@@ -1,96 +1,43 @@
-import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+
+/*
+ * This is the root project.
+ *
+ * The root project should remain empty. Code, etc, should happen in subprojects, and the root project should only delegate
+ * work to subprojects.
+ *
+ * In particular, *avoid using the 'allprojects' and 'subprojects' Gradle blocks!* They slow down the configuration phase.
+ */
 
 plugins {
-    kotlin("jvm")
+	alias(opensavvyConventions.plugins.base)
+	alias(opensavvyConventions.plugins.root)
 
-    id("com.palantir.git-version")
-    id("com.adarshr.test-logger")
-    id("maven-publish")
-
-    id("org.jetbrains.dokka")
+	// Some plugins *must* be configured on the root project.
+	// In these cases, we explicitly tell Gradle not to apply them.
+	alias(opensavvyConventions.plugins.aligned.kotlin) apply false
 }
-
-group = "opensavvy"
-version = calculateVersion()
 
 dependencies {
-    testImplementation(kotlin("test"))
+	// List the 'library' projects
+	dokka(projects.gitlabCiKotlin)
 }
 
-kotlin {
-    jvmToolchain(17)
+// region Check the users of the project didn't forget to rename the group
+
+val projectPath: String? = System.getenv("CI_PROJECT_PATH")
+if (projectPath != null && projectPath != "opensavvy/playgrounds/gradle" && group == "dev.opensavvy.playground") {
+	error("The project is declared to be in the group '$group', which is recognized as the Gradle Playground, but it's hosted in '$projectPath', which is not the Playground. Maybe you forgot to rename the group when importing the Playground in your own project?")
 }
 
-tasks.test {
-    // Force the environment to ensure the test results are the same on all branches
-    environment(
-        "CI_COMMIT_BRANCH" to "main",
-        "CI_DEFAULT_BRANCH" to "main",
-        "CI_COMMIT_TAG" to "2.0",
-    )
+// endregion
+// region Always ignore the yarn.lock file
+// See https://kotlinlang.org/docs/js-project-setup.html#reporting-that-yarn-lock-has-been-updated
+
+plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin::class.java) {
+	the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.NONE
+	the<YarnRootExtension>().yarnLockAutoReplace = true
 }
 
-tasks.withType<DokkaTask>().configureEach {
-    dokkaSourceSets.configureEach {
-        includes.from("README.dokka.md")
-        samples.from(sourceSets.test.get().allSource)
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("gitlab-ci") {
-            from(components["java"])
-        }
-    }
-}
-
-allprojects {
-    repositories {
-        mavenCentral()
-    }
-
-    plugins.apply("maven-publish")
-
-    publishing {
-        repositories {
-            val projectId = System.getenv("CI_PROJECT_ID")
-            val token = System.getenv("CI_JOB_TOKEN")
-
-            if (projectId != null && token != null)
-                maven {
-                    name = "GitLab"
-                    url = uri("https://gitlab.com/api/v4/projects/$projectId/packages/maven")
-
-                    credentials(HttpHeaderCredentials::class.java) {
-                        name = "Job-Token"
-                        value = token
-                    }
-
-                    authentication {
-                        create<HttpHeaderAuthentication>("header")
-                    }
-                }
-            else
-                logger.debug("The GitLab registry is disabled because credentials are missing.")
-        }
-    }
-
-    if (System.getenv("CI") != null) {
-        plugins.apply("com.adarshr.test-logger")
-
-        testlogger {
-            theme = com.adarshr.gradle.testlogger.theme.ThemeType.MOCHA
-        }
-    }
-}
-
-fun calculateVersion(): String {
-    val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
-    val details = versionDetails()
-
-    return if (details.commitDistance == 0)
-        details.lastTag
-    else
-        "${details.lastTag}-post.${details.commitDistance}+${details.gitHash}"
-}
+// endregion

@@ -1,3 +1,11 @@
-# Gradle build files
-build/
-/.gradle/
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# Ignore the JS lockfiles
+kotlin-js-store/
+
+# Ignore the Kotlin metadata directory
+.kotlin
