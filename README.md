@@ -23,8 +23,7 @@ We create a `.gitlab-ci.main.kts` file, make it executable, and set its contents
 ```kotlin
 #!/usr/bin/env kotlin
 
-@file:Repository("https://gitlab.com/api/v4/projects/33995298/packages/maven")
-@file:DependsOn("dev.opensavvy.gitlab:gitlab-ci-kotlin:VERSION-HERE") // See https://gitlab.com/opensavvy/automation/gitlab-ci.kt/-/releases
+@file:DependsOn("dev.opensavvy.gitlab:gitlab-ci-kotlin-jvm:VERSION-HERE") // See https://gitlab.com/opensavvy/automation/gitlab-ci.kt/-/releases
 
 import opensavvy.gitlab.ci.*
 import opensavvy.gitlab.ci.script.*
@@ -55,7 +54,7 @@ To try the project in [Ki](https://blog.jetbrains.com/kotlin/2021/04/ki-the-next
 
 ```text
 [1] :repository https://gitlab.com/api/v4/projects/33995298/packages/maven
-[2] :dependsOn opensavvy:gitlab-ci.kt:VERSION-HERE
+[2] :dependsOn dev.opensavvy.gitlab:gitlab-ci-kotlin-jvm:VERSION-HERE
 [3] import opensavvy.gitlab.ci.*
 [4] import opensavvy.gitlab.ci.script.*
 [5] import opensavvy.gitlab.ci.plugins.*

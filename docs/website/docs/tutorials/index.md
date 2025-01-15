@@ -22,8 +22,7 @@ Create a file named `gitlab-ci.main.kts` (1) with the following content:
 ```kotlin
 #!/usr/bin/env kotlin
 
-@file:Repository("https://gitlab.com/api/v4/projects/33995298/packages/maven")
-@file:DependsOn("dev.opensavvy.gitlab:gitlab-ci-kotlin:VERSION-HERE") //(1)!
+@file:DependsOn("dev.opensavvy.gitlab:gitlab-ci-kotlin-jvm:VERSION-HERE") //(1)!
 
 import opensavvy.gitlab.ci.*
 import opensavvy.gitlab.ci.script.*
