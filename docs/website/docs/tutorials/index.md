@@ -8,6 +8,8 @@ Pre-requisites:
 - [Install Java](https://www.java.com/en/download/help/download_options.html).
 - [Install the Kotlin compiler](https://kotlinlang.org/docs/command-line.html).
 
+If you prefer using an IDE, IntelliJ Community will install all of these automatically.
+
 ## Authoring the pipeline
 
 <div class="annotate" markdown>
@@ -46,6 +48,14 @@ pipeline.println()
 
 In recent versions of IntelliJ, you should be able to execute the file directly. Otherwise, you can run it from the terminal:
 
+=== "IntelliJ"
+
+    Simply open the file. 
+
+    At the top of the file, IntelliJ may prompt you to mark the file as executable.
+
+    To run the script, use the green arrow that appears on the first line of the file.
+
 === "Linux & macOS"
 
     Ensure the file is marked as executable:
@@ -83,6 +93,11 @@ Congratulation, you have created your first GitLab CI pipeline in Kotlin!
 
 !!! note "Performance"
     On the first run, the Kotlin compiler needs to initialize itself and download dependencies, so it may a bit slow. Next runs should be near-instantaneous.
+
+!!! tip
+    To view the documentation in IntelliJ, press CTRL + click on any symbol coming from this library, which will open the decompiled code. At the top of the file, find the "Download sources" button. Once downloading has completed, go back to your script. Quick documentation (CTRL Q by default) should now show the documentation for the symbol you're looking at. 
+
+    If you can, consider contributing documentation improvements.
 
 ## Deploying the pipeline
 
