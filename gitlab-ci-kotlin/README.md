@@ -3,7 +3,7 @@
 Generate your GitLab CI pipeline with Kotlin.
 
 <a href="https://search.maven.org/search?q=opensavvy%20gitlab-ci-kotlin"><img src="https://img.shields.io/maven-central/v/dev.opensavvy.gitlab/gitlab-ci-kotlin.svg?label=Maven%20Central"></a>
-<a href="https://opensavvy.dev/open-source/stability.html"><img src="https://badgen.net/static/Stability/experimental/purple"></a>
+<a href="https://opensavvy.dev/open-source/stability.html"><img src="https://badgen.net/static/Stability/beta/purple"></a>
 <a href="https://javadoc.io/doc/dev.opensavvy.gitlab/gitlab-ci-kotlin"><img src="https://badgen.net/static/Other%20versions/javadoc.io/blue"></a>
 
 ## Configuration

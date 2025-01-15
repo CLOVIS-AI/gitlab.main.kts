@@ -1,9 +1,5 @@
 # GitLab CI Kotlin DSL
 
-> This project is currently experimental.
-> The documentation presents our objective, not necessarily the current state.
-> Please report any issues you encounter [here](https://gitlab.com/opensavvy/automation/gitlab-ci.kt/-/issues/new).
-
 [GitLab CI](https://docs.gitlab.com/ee/ci/) configuration is written in Yaml, in a [.gitlab-ci.yml](https://docs.gitlab.com/ee/ci/yaml/gitlab_ci_yaml.html) file. As projects grow, Yaml becomes unwieldy and reuse between jobs becomes harder. Since the introduction of CI, GitLab has provided many tools to reduce duplication: [global configuration](https://docs.gitlab.com/ee/ci/yaml/#default), [include](https://docs.gitlab.com/ee/ci/yaml/#include), [anchors](https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html#anchors), [extends](https://docs.gitlab.com/ee/ci/yaml/#extends) and [!reference](https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html#reference-tags). All of these still fall short of a real programming or scripting language, however, while adding yet another syntax that must be learned by users.
 
 Kotlin is a modern statically-typed programming language created by JetBrains. Among its various uses, it's well suited for the creation of domain-specific languages (DSLs). Using Kotlin and this library, we can rewrite the following CI configuration easily:
