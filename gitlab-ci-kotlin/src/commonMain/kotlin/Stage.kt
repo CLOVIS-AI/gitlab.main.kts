@@ -36,6 +36,7 @@ import opensavvy.gitlab.ci.utils.generateReadOnlyDelegateProvider
  *
  * Read more in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/#stages).
  */
+@GitLabCiDsl
 data class Stage(
 	val name: String,
 )
@@ -52,6 +53,7 @@ data class Stage(
  *
  * To automatically generate the name from the variable, see [stage].
  */
+@GitLabCiDsl
 fun GitLabCi.stage(name: String): Stage = Stage(name)
 	.also { stages += it }
 
@@ -67,6 +69,7 @@ fun GitLabCi.stage(name: String): Stage = Stage(name)
  *
  * To use a different name than the variable's name, use the [stage] function.
  */
+@GitLabCiDsl
 fun GitLabCi.stage(name: String? = null) = generateReadOnlyDelegateProvider { pipeline, property ->
 	pipeline.stage(name ?: property.name)
 }

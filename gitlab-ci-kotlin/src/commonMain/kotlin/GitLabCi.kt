@@ -35,6 +35,7 @@ import opensavvy.gitlab.ci.yaml.yamlMap
  *
  * Once the pipeline is configured as you'd like, call [toYaml] or [println] to build the configuration file.
  */
+@GitLabCiDsl
 class GitLabCi : YamlExport {
 	internal val stages = LinkedHashSet<Stage>()
 	internal val jobs = ArrayList<Job>()
@@ -74,4 +75,5 @@ class GitLabCi : YamlExport {
  * @see stage Declare a [Stage]
  * @see job Declare a [Job]
  */
+@GitLabCiDsl
 fun gitlabCi(block: GitLabCi.() -> Unit) = GitLabCi().apply(block)

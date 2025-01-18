@@ -21,6 +21,7 @@ import opensavvy.gitlab.ci.yaml.yaml
 import opensavvy.gitlab.ci.yaml.yamlList
 import opensavvy.gitlab.ci.yaml.yamlMap
 
+@GitLabCiDsl
 class Artifacts : YamlExport {
 	private val includes = ArrayList<String>()
 	private val excludes = ArrayList<String>()
@@ -33,48 +34,59 @@ class Artifacts : YamlExport {
 
 	private var rule = When.Always
 
+	@GitLabCiDsl
 	fun include(path: String) {
 		includes += path
 	}
 
+	@GitLabCiDsl
 	fun exclude(path: String) {
 		excludes += path
 	}
 
+	@GitLabCiDsl
 	fun expireIn(time: String) {
 		expireIn = time
 	}
 
+	@GitLabCiDsl
 	fun exposeAs(name: String) {
 		exposeAs = name
 	}
 
+	@GitLabCiDsl
 	fun name(name: String) {
 		this.name = name
 	}
 
+	@GitLabCiDsl
 	fun rule(rule: When) {
 		this.rule = rule
 	}
 
 	//region Reports
 
+	@GitLabCiDsl
 	fun accessibility(path: String) {
 		reports[yaml("accessibility")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun apiFuzzing(path: String) {
 		reports[yaml("api_fuzzing")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun browserPerformance(path: String) {
 		reports[yaml("browser_performance")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun clusterImageScanning(path: String) {
 		reports[yaml("cluster_image_scanning")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun coverage(format: String, path: String) {
 		reports[yaml("coverage_report")] = yamlMap(
 			mapOf(
@@ -84,62 +96,77 @@ class Artifacts : YamlExport {
 		)
 	}
 
+	@GitLabCiDsl
 	fun codeQuality(path: String) {
 		reports[yaml("codequality")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun containerScanning(path: String) {
 		reports[yaml("container_scanning")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun coverageFuzzing(path: String) {
 		reports[yaml("coverage_fuzzing")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun cyclonedx(vararg path: String) {
 		reports[yaml("cyclonedx")] = yamlList(path.asList())
 	}
 
+	@GitLabCiDsl
 	fun dast(path: String) {
 		reports[yaml("dast")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun dependencyScanning(path: String) {
 		reports[yaml("dependency_scanning")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun dotenv(path: String) {
 		reports[yaml("dotenv")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun junit(path: String) {
 		reports[yaml("junit")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun licenseScanning(path: String) {
 		reports[yaml("license_scanning")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun loadPerformance(path: String) {
 		reports[yaml("load_performance")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun metrics(path: String) {
 		reports[yaml("metric")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun requirements(path: String) {
 		reports[yaml("requirements")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun sast(path: String) {
 		reports[yaml("sast")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun secretDetection(path: String) {
 		reports[yaml("secret_detection")] = yaml(path)
 	}
 
+	@GitLabCiDsl
 	fun terraform(path: String) {
 		reports[yaml("terraform")] = yaml(path)
 	}
