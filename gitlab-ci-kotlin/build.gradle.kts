@@ -35,7 +35,7 @@ kotlin {
 library {
 	name.set("GitLab CI Kotlin DSL")
 	description.set("Write your GitLab CI pipelines in Kotlin")
-	homeUrl.set("https://gitlab.com/opensavvy/automation/gitlab-ci.kt")
+	homeUrl.set("https://opensavvy.gitlab.io/automation/gitlab-ci.kt/docs/")
 
 	license.set {
 		name.set("Apache 2.0")
