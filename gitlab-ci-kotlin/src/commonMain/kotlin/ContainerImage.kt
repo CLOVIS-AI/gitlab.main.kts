@@ -21,6 +21,7 @@ import opensavvy.gitlab.ci.yaml.yaml
 import opensavvy.gitlab.ci.yaml.yamlList
 import opensavvy.gitlab.ci.yaml.yamlMap
 
+@GitLabCiDsl
 open class ContainerImage internal constructor(val nameAndVersion: String) : YamlExport {
 	var entrypoint: List<String>? = null
 
@@ -50,6 +51,7 @@ open class ContainerImage internal constructor(val nameAndVersion: String) : Yam
 	}
 }
 
+@GitLabCiDsl
 class ContainerService internal constructor(name: String) : ContainerImage(name) {
 	var alias: String? = null
 	var command: List<String>? = null

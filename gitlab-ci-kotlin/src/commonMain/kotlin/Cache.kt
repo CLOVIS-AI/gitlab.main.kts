@@ -21,14 +21,17 @@ import opensavvy.gitlab.ci.yaml.yaml
 import opensavvy.gitlab.ci.yaml.yamlList
 import opensavvy.gitlab.ci.yaml.yamlMap
 
+@GitLabCiDsl
 class Cache : YamlExport {
 	private val includes = ArrayList<String>()
 	private val keyFiles = ArrayList<String>()
 
+	@GitLabCiDsl
 	fun include(path: String) {
 		includes += path
 	}
 
+	@GitLabCiDsl
 	fun keyFile(path: String) {
 		keyFiles += path
 	}
