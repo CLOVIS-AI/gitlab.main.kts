@@ -43,10 +43,16 @@ library {
 	}
 }
 
+val overrideTestResults: String? by project
+
 tasks.withType<Test> {
 	environment(
 		"CI_COMMIT_BRANCH" to "main",
 		"CI_DEFAULT_BRANCH" to "main",
 		"CI_COMMIT_TAG" to "2.0",
 	)
+
+	if (overrideTestResults != null) {
+		environment("tests_override_results", "true")
+	}
 }
