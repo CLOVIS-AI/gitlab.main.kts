@@ -21,6 +21,28 @@ import opensavvy.gitlab.ci.Variable
 import opensavvy.gitlab.ci.script.CommandDsl
 import opensavvy.gitlab.ci.script.shell
 
+/**
+ * Plugin to use the Gradle build tool within pipelines.
+ *
+ * This plugin automatically configures wrapper caching and test reporting.
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * gitlabCi {
+ *     val build by job {
+ *         useGradle()
+ *
+ *         script {
+ *             gradlew.task("build")
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * @see useGradle Enable this plugin.
+ * @see task Run a task.
+ */
 class Gradle private constructor(private val dsl: CommandDsl, private val isWrapper: Boolean) {
 
 	private val cmd = if (isWrapper)
@@ -28,15 +50,56 @@ class Gradle private constructor(private val dsl: CommandDsl, private val isWrap
 	else
 		"gradle"
 
+	/**
+	 * Executes the Gradle task named [task].
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * gitlabCi {
+	 *     val build by job {
+	 *         useGradle()
+	 *
+	 *         script {
+	 *             gradlew.task("build")
+	 *         }
+	 *     }
+	 * }
+	 * ```
+	 */
 	fun task(task: String) = tasks(task)
 
-	fun tasks(vararg task: String) = with(dsl) {
-		shell("$cmd ${task.joinToString(" ")}")
+	/**
+	 * Executes the Gradle tasks named [tasks].
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * gitlabCi {
+	 *     val build by job {
+	 *         useGradle()
+	 *
+	 *         script {
+	 *             gradlew.tasks("assemble", "check")
+	 *         }
+	 *     }
+	 * }
+	 * ```
+	 */
+	fun tasks(vararg tasks: String) = with(dsl) {
+		shell("$cmd ${tasks.joinToString(" ")}")
 	}
 
-	fun tasks(task: Iterable<String>) = tasks(*task.toList().toTypedArray())
+	/**
+	 * Executes the Gradle tasks named [tasks].
+	 */
+	fun tasks(tasks: Iterable<String>) = tasks(*tasks.toList().toTypedArray())
 
 	companion object {
+
+		/**
+		 * Enables the [Gradle] plugin.
+		 */
 		fun Job.useGradle() {
 			variable("GRADLE_USER_HOME", "${Variable.buildDir}/.gradle")
 
@@ -44,9 +107,26 @@ class Gradle private constructor(private val dsl: CommandDsl, private val isWrap
 				include(".gradle/wrapper")
 				keyFile("gradle/wrapper/gradle-wrapper.properties")
 			}
+
+			artifacts {
+				junit("'**/build/test-results/**/TEST-*.xml'")
+			}
 		}
 
+		/**
+		 * Allows executing commands using the system `gradle` command.
+		 *
+		 * @see gradlew Use the Gradle Wrapper bundled in the project.
+		 * @see Gradle.task Execute a task.
+		 */
 		val CommandDsl.gradle get() = Gradle(this, isWrapper = false)
+
+		/**
+		 * Allows executing commands using the Gradle Wrapper bundled into the project.
+		 *
+		 * @see gradle Use the system `gradle` command.
+		 * @see Gradle.task Execute a task.
+		 */
 		val CommandDsl.gradlew get() = Gradle(this, isWrapper = true)
 	}
 }

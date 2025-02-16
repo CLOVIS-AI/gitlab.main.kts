@@ -48,7 +48,6 @@ class SpineTest : PreparedSpec({
 					artifacts {
 						include("test-report-$module")
 						exposeAs("Test and coverage report")
-						junit("$module/build/test-results/jvmTest/**.xml")
 					}
 				}
 

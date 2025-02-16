@@ -19,7 +19,7 @@ stages:
     - './gradlew logger:koverReport logger:koverVerify'
   artifacts: 
     reports: 
-      junit: logger/build/test-results/jvmTest/**.xml
+      junit: '**/build/test-results/**/TEST-*.xml'
     paths: 
       - test-report-logger
     expose_as: Test and coverage report
@@ -63,7 +63,7 @@ stages:
     - './gradlew state:koverReport state:koverVerify'
   artifacts: 
     reports: 
-      junit: state/build/test-results/jvmTest/**.xml
+      junit: '**/build/test-results/**/TEST-*.xml'
     paths: 
       - test-report-state
     expose_as: Test and coverage report
@@ -107,7 +107,7 @@ stages:
     - './gradlew cache:koverReport cache:koverVerify'
   artifacts: 
     reports: 
-      junit: cache/build/test-results/jvmTest/**.xml
+      junit: '**/build/test-results/**/TEST-*.xml'
     paths: 
       - test-report-cache
     expose_as: Test and coverage report
@@ -151,7 +151,7 @@ stages:
     - './gradlew backbone:koverReport backbone:koverVerify'
   artifacts: 
     reports: 
-      junit: backbone/build/test-results/jvmTest/**.xml
+      junit: '**/build/test-results/**/TEST-*.xml'
     paths: 
       - test-report-backbone
     expose_as: Test and coverage report
@@ -195,7 +195,7 @@ stages:
     - './gradlew spine:koverReport spine:koverVerify'
   artifacts: 
     reports: 
-      junit: spine/build/test-results/jvmTest/**.xml
+      junit: '**/build/test-results/**/TEST-*.xml'
     paths: 
       - test-report-spine
     expose_as: Test and coverage report
@@ -239,7 +239,7 @@ stages:
     - './gradlew spine-ktor:koverReport spine-ktor:koverVerify'
   artifacts: 
     reports: 
-      junit: spine-ktor/build/test-results/jvmTest/**.xml
+      junit: '**/build/test-results/**/TEST-*.xml'
     paths: 
       - test-report-spine-ktor
     expose_as: Test and coverage report
@@ -283,7 +283,7 @@ stages:
     - './gradlew spine-ktor-client:koverReport spine-ktor-client:koverVerify'
   artifacts: 
     reports: 
-      junit: spine-ktor-client/build/test-results/jvmTest/**.xml
+      junit: '**/build/test-results/**/TEST-*.xml'
     paths: 
       - test-report-spine-ktor-client
     expose_as: Test and coverage report
@@ -330,6 +330,7 @@ publish:
     - './gradlew logger:publishToGitLab state:publishToGitLab cache:publishToGitLab backbone:publishToGitLab spine:publishToGitLab spine-ktor:publishToGitLab spine-ktor:publishToGitLab spine-ktor-client:publishToGitLab'
   artifacts: 
     reports: 
+      junit: '**/build/test-results/**/TEST-*.xml'
     paths: []
     exclude: []
     when: always
