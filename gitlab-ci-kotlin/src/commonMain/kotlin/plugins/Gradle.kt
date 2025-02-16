@@ -44,6 +44,10 @@ class Gradle private constructor(private val dsl: CommandDsl, private val isWrap
 				include(".gradle/wrapper")
 				keyFile("gradle/wrapper/gradle-wrapper.properties")
 			}
+
+			artifacts {
+				junit("'**/build/test-results/**/TEST-*.xml'")
+			}
 		}
 
 		val CommandDsl.gradle get() = Gradle(this, isWrapper = false)
