@@ -17,6 +17,7 @@
 package opensavvy.gitlab.ci.plugins
 
 import opensavvy.gitlab.ci.Job
+import opensavvy.gitlab.ci.Value
 import opensavvy.gitlab.ci.Variable
 import opensavvy.gitlab.ci.plugins.Docker.Companion.docker
 import opensavvy.gitlab.ci.plugins.Docker.Companion.useContainerRegistry
@@ -96,7 +97,7 @@ class Docker private constructor(private val dsl: CommandDsl) {
 	 */
 	fun build(
 		image: String,
-		version: String = "build-${Variable.MergeRequest.iid}",
+		version: String = defaultVersion,
 		dockerfile: String = "Dockerfile",
 		context: String = ".",
 		previousVersions: List<String> = listOf("latest"),
@@ -123,7 +124,7 @@ class Docker private constructor(private val dsl: CommandDsl) {
 	 */
 	fun push(
 		image: String,
-		version: String = "build-${Variable.MergeRequest.iid}",
+		version: String = defaultVersion,
 	) = with(dsl) {
 		shell("docker push $image:$version")
 	}
@@ -142,7 +143,7 @@ class Docker private constructor(private val dsl: CommandDsl) {
 	 */
 	fun rename(
 		image: String,
-		oldVersion: String = "build-${Variable.MergeRequest.iid}",
+		oldVersion: String = defaultVersion,
 		newVersion: String = "latest",
 	) = with(dsl) {
 		pull(image, oldVersion)
@@ -196,5 +197,10 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		 * @sample opensavvy.gitlab.ci.plugins.DockerTest.buildImage
 		 */
 		val CommandDsl.docker get() = Docker(this)
+
+		/**
+		 * Unique version used as a default value when unspecified.
+		 */
+		val defaultVersion = "build-${Value.MergeRequest.iid}"
 	}
 }
