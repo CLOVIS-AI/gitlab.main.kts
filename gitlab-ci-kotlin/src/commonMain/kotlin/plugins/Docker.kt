@@ -17,7 +17,6 @@
 package opensavvy.gitlab.ci.plugins
 
 import opensavvy.gitlab.ci.Job
-import opensavvy.gitlab.ci.Value
 import opensavvy.gitlab.ci.Variable
 import opensavvy.gitlab.ci.plugins.Docker.Companion.docker
 import opensavvy.gitlab.ci.plugins.Docker.Companion.useContainerRegistry
@@ -39,6 +38,9 @@ import opensavvy.gitlab.ci.script.shell
  *     }
  * }
  * ```
+ *
+ * This plugin uses [Docker in Docker](https://www.docker.com/resources/docker-in-docker-containerized-ci-workflows-dockercon-2023/),
+ * which can create security vulnerabilities. To build containers without using Docker in Docker, see the [Kaniko] plugin.
  *
  * ## Job extensions
  *
@@ -201,6 +203,6 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		/**
 		 * Unique version used as a default value when unspecified.
 		 */
-		val defaultVersion = "build-${Value.MergeRequest.iid}"
+		const val defaultVersion = "build-${Variable.MergeRequest.iid}"
 	}
 }

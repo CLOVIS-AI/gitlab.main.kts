@@ -30,6 +30,10 @@ kotlin {
 		implementation(libs.prepared)
 		implementation(libs.prepared.files)
 	}
+
+	compilerOptions {
+		freeCompilerArgs.set(listOf("-Xmulti-dollar-interpolation"))
+	}
 }
 
 library {
@@ -50,6 +54,7 @@ tasks.withType<Test> {
 		"CI_COMMIT_BRANCH" to "main",
 		"CI_DEFAULT_BRANCH" to "main",
 		"CI_COMMIT_TAG" to "2.0",
+		"CI_REGISTRY_IMAGE" to "https://registry.gitlab.com/group/project",
 	)
 
 	if (overrideTestResults != null) {

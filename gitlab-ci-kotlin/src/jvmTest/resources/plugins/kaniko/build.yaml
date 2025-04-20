@@ -1,0 +1,45 @@
+
+stages: 
+  - build
+  - deploy
+kanikoBuild: 
+  before_script: 
+    - 'echo "{	\"auths\": {		\"$CI_REGISTRY\": {			\"auth\": \"$(printf "%s:%s" "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64 | tr -d "\n")\"		},		\"$(echo -n $CI_DEPENDENCY_PROXY_SERVER | awk -F[:] "{print \$2} ")\": {			\"auth\": \"$(printf "%s:%s" "$CI_DEPENDENCY_PROXY_USER" "$CI_DEPENDENCY_PROXY_PASSWORD" | base64 | tr -d "\n")\"		}	}	}" >/kaniko/.docker/config.json'
+  needs: []
+  image: 
+    entrypoint: 
+      - ''
+    name: 'gcr.io/kaniko-project/executor:v1.23.2-debug'
+  variables: 
+    http2client: 0
+  cache: 
+    paths: []
+  stage: build
+  script: 
+    - '/kaniko/executor --context "docker" --dockerfile "docker/Dockerfile" --cache --registry-mirror "$CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX" --destination "https://registry.gitlab.com/group/project/minecraft:build-$CI_MERGE_REQUEST_IID"'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+kanikoRename: 
+  needs: 
+    - 
+      job: kanikoBuild
+      artifacts: false
+      optional: false
+  image: 
+    entrypoint: 
+      - ''
+    name: 'gcr.io/go-containerregistry/crane:debug'
+  cache: 
+    paths: []
+  stage: deploy
+  script: 
+    - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - 'crane tag "https://registry.gitlab.com/group/project/minecraft:build-$CI_MERGE_REQUEST_IID" "https://registry.gitlab.com/group/project/minecraft:latest"'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
