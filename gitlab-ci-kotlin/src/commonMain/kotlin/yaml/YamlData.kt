@@ -36,7 +36,7 @@ sealed class Yaml : YamlExport {
 					if (":" in value)
 						"'$value'"
 					else
-						value
+						value.ifBlank { "''" }
 				} else {
 					val builder = StringBuilder()
 					builder += "|\n"
