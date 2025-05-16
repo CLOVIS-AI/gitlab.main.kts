@@ -1,5 +1,5 @@
 site_name: .gitlab-ci.main.kts
-site_author: OpenSavvy & contributors
+site_author: OpenSavvy and contributors
 site_description: >
   Generate your GitLab CI pipeline with Kotlin.
 
