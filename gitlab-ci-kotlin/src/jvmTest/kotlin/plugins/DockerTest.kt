@@ -24,9 +24,9 @@ import opensavvy.gitlab.ci.job
 import opensavvy.gitlab.ci.plugins.Docker.Companion.docker
 import opensavvy.gitlab.ci.plugins.Docker.Companion.useContainerRegistry
 import opensavvy.gitlab.ci.plugins.Docker.Companion.useDockerInDocker
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
-class DockerTest : PreparedSpec({
+val DockerTest by preparedSuite {
 
 	test("Build image") {
 		/*
@@ -85,4 +85,4 @@ class DockerTest : PreparedSpec({
 		assertEqualsFile("plugins/docker/buildImage.yaml", pipeline)
 	}
 
-})
+}

@@ -19,9 +19,9 @@ package opensavvy.gitlab.ci
 import opensavvy.gitlab.ci.diff.assertEqualsFile
 import opensavvy.gitlab.ci.plugins.Gradle.Companion.gradlew
 import opensavvy.gitlab.ci.script.shell
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
-class BasicTest : PreparedSpec({
+val BasicTest by preparedSuite {
 
 	test("Generate a basic CI inspired by Pedestal") {
 		val pipeline = gitlabCi {
@@ -80,4 +80,4 @@ class BasicTest : PreparedSpec({
 		assertEqualsFile("basic.gitlab-ci.yaml", pipeline)
 	}
 
-})
+}

@@ -21,13 +21,14 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 plugins {
 	alias(opensavvyConventions.plugins.base)
 	alias(opensavvyConventions.plugins.kotlin.library)
+	alias(libsCommon.plugins.testBalloon)
 }
 
 kotlin {
 	jvm()
 
 	sourceSets.commonTest.dependencies {
-		implementation(libsCommon.opensavvy.prepared.kotest)
+		implementation(libsCommon.opensavvy.prepared.testBalloon)
 		implementation(libsCommon.opensavvy.prepared.filesystem)
 	}
 

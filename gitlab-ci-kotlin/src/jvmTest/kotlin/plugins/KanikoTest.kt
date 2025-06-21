@@ -22,9 +22,9 @@ import opensavvy.gitlab.ci.gitlabCi
 import opensavvy.gitlab.ci.plugins.Kaniko.Companion.kanikoBuild
 import opensavvy.gitlab.ci.plugins.Kaniko.Companion.kanikoRename
 import opensavvy.gitlab.ci.stage
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
-class KanikoTest : PreparedSpec({
+val KanikoTest by preparedSuite {
 
 	test("Build and publish image") {
 		val pipeline = gitlabCi {
@@ -52,4 +52,4 @@ class KanikoTest : PreparedSpec({
 		assertEqualsFile("plugins/kaniko/build.yaml", pipeline)
 	}
 
-})
+}

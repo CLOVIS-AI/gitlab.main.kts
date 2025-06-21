@@ -16,11 +16,10 @@
 
 package opensavvy.gitlab.ci.yaml
 
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.Assertions.assertEquals
 
-class YamlDataTest : PreparedSpec({
+val YamlDataTest by preparedSuite {
 
 	test("Single line string") {
 		val text = Yaml.Scalar.StringLiteral("Hello world")
@@ -91,11 +90,11 @@ class YamlDataTest : PreparedSpec({
 """, map)
 	}
 
-})
+}
 
 private fun assertEqualsYaml(@Language("yaml") expected: String, actual: Yaml) {
 	val generated = actual.toYamlString()
-	assertEquals(expected.trimIndent(), generated.removeSuffix("\n"))
+	check(expected.trimIndent() == generated.removeSuffix("\n"))
 
 	println(generated)
 }
