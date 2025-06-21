@@ -39,6 +39,9 @@ import opensavvy.gitlab.ci.script.shell
  * }
  * ```
  *
+ * This plugin uses [Docker in Docker](https://www.docker.com/resources/docker-in-docker-containerized-ci-workflows-dockercon-2023/),
+ * which can create security vulnerabilities. To build containers without using Docker in Docker, see the [Kaniko] plugin.
+ *
  * ## Job extensions
  *
  * This plugin provides the following job extensions:
@@ -96,7 +99,7 @@ class Docker private constructor(private val dsl: CommandDsl) {
 	 */
 	fun build(
 		image: String,
-		version: String = "build-${Variable.MergeRequest.iid}",
+		version: String = defaultVersion,
 		dockerfile: String = "Dockerfile",
 		context: String = ".",
 		previousVersions: List<String> = listOf("latest"),
@@ -123,7 +126,7 @@ class Docker private constructor(private val dsl: CommandDsl) {
 	 */
 	fun push(
 		image: String,
-		version: String = "build-${Variable.MergeRequest.iid}",
+		version: String = defaultVersion,
 	) = with(dsl) {
 		shell("docker push $image:$version")
 	}
@@ -142,7 +145,7 @@ class Docker private constructor(private val dsl: CommandDsl) {
 	 */
 	fun rename(
 		image: String,
-		oldVersion: String = "build-${Variable.MergeRequest.iid}",
+		oldVersion: String = defaultVersion,
 		newVersion: String = "latest",
 	) = with(dsl) {
 		pull(image, oldVersion)
@@ -196,5 +199,10 @@ class Docker private constructor(private val dsl: CommandDsl) {
 		 * @sample opensavvy.gitlab.ci.plugins.DockerTest.buildImage
 		 */
 		val CommandDsl.docker get() = Docker(this)
+
+		/**
+		 * Unique version used as a default value when unspecified.
+		 */
+		const val defaultVersion = "build-${Variable.MergeRequest.iid}"
 	}
 }
