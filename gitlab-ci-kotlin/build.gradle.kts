@@ -27,8 +27,8 @@ kotlin {
 	jvm()
 
 	sourceSets.commonTest.dependencies {
-		implementation(libs.prepared)
-		implementation(libs.prepared.files)
+		implementation(libsCommon.opensavvy.prepared.kotest)
+		implementation(libsCommon.opensavvy.prepared.filesystem)
 	}
 
 	compilerOptions {
