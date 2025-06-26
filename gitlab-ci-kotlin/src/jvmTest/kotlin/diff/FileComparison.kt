@@ -17,7 +17,6 @@
 package opensavvy.gitlab.ci.diff
 
 import opensavvy.gitlab.ci.YamlExport
-import org.junit.jupiter.api.Assertions.assertEquals
 import java.io.File
 
 private val testRoot = File("src/jvmTest/resources")
@@ -37,11 +36,7 @@ fun assertEqualsFile(filename: String, data: String) {
 		println("TRACE [File diff] Writing the output to the file…")
 		file.writeText(data)
 	} else {
-		assertEquals(
-			file.readText(),
-			data,
-			"The test results are different from the previous execution (from file://${file.absolutePath})"
-		)
+		check(file.readText() == data) { "The test results are different from the previous execution (from file://${file.absolutePath})" }
 	}
 }
 

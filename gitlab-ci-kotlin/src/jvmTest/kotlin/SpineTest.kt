@@ -21,11 +21,11 @@ import opensavvy.gitlab.ci.plugins.Gradle.Companion.gradlew
 import opensavvy.gitlab.ci.plugins.Gradle.Companion.useGradle
 import opensavvy.gitlab.ci.plugins.Pacman.Companion.pacman
 import opensavvy.gitlab.ci.script.shell
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
 // Inspired by https://gitlab.com/opensavvy/pedestal/-/blob/main/.gitlab-ci.yml
 
-class SpineTest : PreparedSpec({
+val SpineTest by preparedSuite {
 
 	test("Generate a pipeline inspired by the old Spine") {
 		val pipeline = gitlabCi {
@@ -117,4 +117,4 @@ class SpineTest : PreparedSpec({
 		assertEqualsFile("spine.gitlab-ci.yml", pipeline)
 	}
 
-})
+}
