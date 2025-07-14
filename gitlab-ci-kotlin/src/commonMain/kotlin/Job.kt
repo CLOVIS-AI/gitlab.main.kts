@@ -397,6 +397,36 @@ class Job internal constructor(
 		artifacts.apply(configuration)
 	}
 
+	// endregion
+	// region Retry
+
+	private var retryConfig: Retry? = null
+
+	/**
+	 * Configures how many times a job is retried if it fails.
+	 * If not defined, defaults to 0 and jobs do not retry.
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     retry(2) {
+	 *         whenType(RetryWhen.RunnerSystemFailure)
+	 *         onExitCode(137)
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#retry)
+	 */
+	@GitLabCiDsl
+	fun retry(max: Int, configuration: Retry.() -> Unit = {}) {
+		require(max in 0..2) { "Retry max must be 0, 1, or 2, but was $max" }
+		retryConfig = Retry(max).apply(configuration)
+	}
+
 	//endregion
 	// region Code coverage
 
@@ -465,6 +495,9 @@ class Job internal constructor(
 
 		if (coverageRegex != null)
 			elements[yaml("coverage")] = yaml(coverageRegex)
+
+		if (retryConfig != null)
+			elements[yaml("retry")] = yaml(retryConfig!!)
 
 		return yamlMap(elements)
 	}

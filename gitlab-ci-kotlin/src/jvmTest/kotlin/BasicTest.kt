@@ -23,6 +23,78 @@ import opensavvy.prepared.runner.testballoon.preparedSuite
 
 val BasicTest by preparedSuite {
 
+	test("Test retry functionality") {
+		val pipeline = gitlabCi {
+			val build by stage()
+
+			// Simple retry
+			val simpleRetry by job(stage = build) {
+				script {
+					shell("echo 'Simple retry test'")
+				}
+				retry(2)
+			}
+
+			// Retry with when type
+			val retryWithWhen by job(stage = build) {
+				script {
+					shell("echo 'Retry with when type test'")
+				}
+				retry(2) {
+					on(RetryCause.RunnerSystemFailure)
+				}
+			}
+
+			// Retry with multiple when types
+			val retryWithMultipleWhen by job(stage = build) {
+				script {
+					shell("echo 'Retry with multiple when types test'")
+				}
+				retry(2) {
+					on(RetryCause.RunnerSystemFailure)
+					on(RetryCause.ApiFailure)
+				}
+			}
+
+			// Retry with exit code
+			val retryWithExitCode by job(stage = build) {
+				script {
+					shell("echo 'Retry with exit code test'")
+				}
+				retry(2) {
+					onExitCode(137)
+				}
+			}
+
+			// Retry with multiple exit codes
+			val retryWithMultipleExitCodes by job(stage = build) {
+				script {
+					shell("echo 'Retry with multiple exit codes test'")
+				}
+				retry(2) {
+					onExitCode(137)
+					onExitCode(255)
+				}
+			}
+
+			// Retry with both when type and exit code
+			val retryWithBoth by job(stage = build) {
+				script {
+					shell("echo 'Retry with both when type and exit code test'")
+				}
+				retry(2) {
+					on(RetryCause.RunnerSystemFailure)
+					onExitCode(137)
+				}
+			}
+		}
+
+		// Verify the YAML output contains the expected retry configurations
+		val yaml = pipeline.toYaml().toYamlString()
+
+		assertEqualsFile("retry.gitlab-ci.yml", yaml)
+	}
+
 	test("Generate a basic CI inspired by Pedestal") {
 		val pipeline = gitlabCi {
 			val build by stage()
