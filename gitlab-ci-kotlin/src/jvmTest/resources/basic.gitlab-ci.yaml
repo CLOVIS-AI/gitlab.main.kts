@@ -10,6 +10,7 @@ stages:
   cache: 
     paths: []
   stage: publish
+  interruptible: false
   script: 
     - pacman -Syu --noconfirm git jre-openjdk-headless
     - './gradlew logger:publishKotlinMultiplatformPublicationToGitLabRepository'
@@ -25,6 +26,7 @@ stages:
   cache: 
     paths: []
   stage: publish
+  interruptible: false
   script: 
     - pacman -Syu --noconfirm git jre-openjdk-headless
     - './gradlew backbone:publishKotlinMultiplatformPublicationToGitLabRepository'
@@ -38,6 +40,7 @@ dokka:
   cache: 
     paths: []
   stage: build
+  interruptible: true
   script: 
     - ./gradlew dokkaHtmlMultiModule
     - mv build/dokka/htmlMultiModule documentation
@@ -58,6 +61,7 @@ pages:
   cache: 
     paths: []
   stage: publish
+  interruptible: false
   script: 
     - mkdir -p public
     - mv documentation public

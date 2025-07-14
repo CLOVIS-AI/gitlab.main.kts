@@ -16,6 +16,7 @@ stages:
       files: 
         - gradle/wrapper/gradle-wrapper.properties
   stage: test
+  interruptible: false
   script: 
     - './gradlew logger:koverReport logger:koverVerify'
   artifacts: 
@@ -37,6 +38,7 @@ stages:
   cache: 
     paths: []
   stage: test
+  interruptible: false
   script: 
     - python /opt/cover2cover.py test-report-logger/coverage.xml $CI_BUILDS_DIR/logger/src/main/kotlin >cobertura.xml
   artifacts: 
@@ -61,6 +63,7 @@ stages:
       files: 
         - gradle/wrapper/gradle-wrapper.properties
   stage: test
+  interruptible: false
   script: 
     - './gradlew state:koverReport state:koverVerify'
   artifacts: 
@@ -82,6 +85,7 @@ stages:
   cache: 
     paths: []
   stage: test
+  interruptible: false
   script: 
     - python /opt/cover2cover.py test-report-state/coverage.xml $CI_BUILDS_DIR/state/src/main/kotlin >cobertura.xml
   artifacts: 
@@ -106,6 +110,7 @@ stages:
       files: 
         - gradle/wrapper/gradle-wrapper.properties
   stage: test
+  interruptible: false
   script: 
     - './gradlew cache:koverReport cache:koverVerify'
   artifacts: 
@@ -127,6 +132,7 @@ stages:
   cache: 
     paths: []
   stage: test
+  interruptible: false
   script: 
     - python /opt/cover2cover.py test-report-cache/coverage.xml $CI_BUILDS_DIR/cache/src/main/kotlin >cobertura.xml
   artifacts: 
@@ -151,6 +157,7 @@ stages:
       files: 
         - gradle/wrapper/gradle-wrapper.properties
   stage: test
+  interruptible: false
   script: 
     - './gradlew backbone:koverReport backbone:koverVerify'
   artifacts: 
@@ -172,6 +179,7 @@ stages:
   cache: 
     paths: []
   stage: test
+  interruptible: false
   script: 
     - python /opt/cover2cover.py test-report-backbone/coverage.xml $CI_BUILDS_DIR/backbone/src/main/kotlin >cobertura.xml
   artifacts: 
@@ -196,6 +204,7 @@ stages:
       files: 
         - gradle/wrapper/gradle-wrapper.properties
   stage: test
+  interruptible: false
   script: 
     - './gradlew spine:koverReport spine:koverVerify'
   artifacts: 
@@ -217,6 +226,7 @@ stages:
   cache: 
     paths: []
   stage: test
+  interruptible: false
   script: 
     - python /opt/cover2cover.py test-report-spine/coverage.xml $CI_BUILDS_DIR/spine/src/main/kotlin >cobertura.xml
   artifacts: 
@@ -241,6 +251,7 @@ stages:
       files: 
         - gradle/wrapper/gradle-wrapper.properties
   stage: test
+  interruptible: false
   script: 
     - './gradlew spine-ktor:koverReport spine-ktor:koverVerify'
   artifacts: 
@@ -262,6 +273,7 @@ stages:
   cache: 
     paths: []
   stage: test
+  interruptible: false
   script: 
     - python /opt/cover2cover.py test-report-spine-ktor/coverage.xml $CI_BUILDS_DIR/spine-ktor/src/main/kotlin >cobertura.xml
   artifacts: 
@@ -286,6 +298,7 @@ stages:
       files: 
         - gradle/wrapper/gradle-wrapper.properties
   stage: test
+  interruptible: false
   script: 
     - './gradlew spine-ktor-client:koverReport spine-ktor-client:koverVerify'
   artifacts: 
@@ -307,6 +320,7 @@ stages:
   cache: 
     paths: []
   stage: test
+  interruptible: false
   script: 
     - python /opt/cover2cover.py test-report-spine-ktor-client/coverage.xml $CI_BUILDS_DIR/spine-ktor-client/src/main/kotlin >cobertura.xml
   artifacts: 
@@ -334,6 +348,7 @@ publish:
       files: 
         - gradle/wrapper/gradle-wrapper.properties
   stage: publish
+  interruptible: false
   script: 
     - './gradlew logger:publishToGitLab state:publishToGitLab cache:publishToGitLab backbone:publishToGitLab spine:publishToGitLab spine-ktor:publishToGitLab spine-ktor:publishToGitLab spine-ktor-client:publishToGitLab'
   artifacts: 
@@ -348,6 +363,7 @@ dokka:
     name: 'openjdk:latest'
   cache: 
     paths: []
+  interruptible: false
   script: 
     - ./gradlew dokkaHtmlMultiModule
     - mv build/dokka/htmlMultiModule documentation
@@ -369,6 +385,7 @@ pages:
   cache: 
     paths: []
   stage: publish
+  interruptible: false
   script: 
     - mkdir -p public
     - mv documentation public

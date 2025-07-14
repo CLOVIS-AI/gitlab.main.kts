@@ -109,6 +109,8 @@ val BasicTest by preparedSuite {
 					shell("pacman -Syu --noconfirm git jre-openjdk-headless")
 					gradlew.task("$module:publish${publication}PublicationTo${repository}Repository")
 				}
+
+				interruptible(false)
 			}
 
 			if (Value.isDefaultBranch || Value.isTag) {
@@ -131,6 +133,8 @@ val BasicTest by preparedSuite {
 
 					include("documentation")
 				}
+
+				interruptible(true)
 			}
 
 			if (Value.isDefaultBranch) {
@@ -145,6 +149,8 @@ val BasicTest by preparedSuite {
 					artifacts {
 						include("public")
 					}
+
+					interruptible(false)
 				}
 			}
 		}

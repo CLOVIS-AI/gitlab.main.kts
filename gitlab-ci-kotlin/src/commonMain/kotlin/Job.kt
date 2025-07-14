@@ -459,6 +459,27 @@ class Job internal constructor(
 	}
 
 	// endregion
+	// region Interruptible
+
+	private var isInterruptible: Boolean = false
+
+	/**
+	 * Determines whether this job can be safely canceled after it has started.
+	 *
+	 * If set to `true`, if a new commit is pushed to the same branch, this job will be canceled.
+	 *
+	 * If set to `false` (the default), if a new commit is pushed to the same branch, the job and any later jobs
+	 * in the pipeline will continue executing.
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#interruptible)
+	 */
+	fun interruptible(bool: Boolean) {
+		isInterruptible = bool
+	}
+
+	// endregion
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -498,6 +519,8 @@ class Job internal constructor(
 
 		if (retryConfig != null)
 			elements[yaml("retry")] = yaml(retryConfig!!)
+
+		elements[yaml("interruptible")] = yaml(isInterruptible)
 
 		return yamlMap(elements)
 	}
