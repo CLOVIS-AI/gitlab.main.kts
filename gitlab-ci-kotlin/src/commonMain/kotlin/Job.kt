@@ -23,6 +23,7 @@ import opensavvy.gitlab.ci.yaml.Yaml
 import opensavvy.gitlab.ci.yaml.yaml
 import opensavvy.gitlab.ci.yaml.yamlList
 import opensavvy.gitlab.ci.yaml.yamlMap
+import org.intellij.lang.annotations.Language
 
 /**
  * A single execution step in a [pipeline][GitLabCi].
@@ -52,7 +53,7 @@ class Job internal constructor(
 	 * The container image used to execute this job, if any.
 	 */
 	private var image: ContainerImage? = null
-		private set(value) {
+		set(value) {
 			if (field != null && field != value)
 				System.err.println("Job '$name': setting the image to $value overrides previous setting $field")
 			field = value
@@ -397,6 +398,37 @@ class Job internal constructor(
 	}
 
 	//endregion
+	// region Code coverage
+
+	private var coverageRegex: String? = null
+
+	/**
+	 * Declares a [regular expression][regex] to configure how code coverage is
+	 * extracted from the job output. The coverage is shown in the UI if at least one
+	 * line of the job output matches [regex].
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     script {
+	 *         shell("echo Code coverage: 99%")
+	 *     }
+	 *
+	 *     coverage("Code coverage: \d+(?:\.\d+)?")
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#coverage)
+	 */
+	@GitLabCiDsl
+	fun coverage(@Language("JSRegexp") regex: String) {
+		coverageRegex = "/$regex/"
+	}
+
+	// endregion
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -430,6 +462,9 @@ class Job internal constructor(
 		elements[yaml("cache")] = yaml(cache)
 
 		elements[yaml("artifacts")] = yaml(artifacts)
+
+		if (coverageRegex != null)
+			elements[yaml("coverage")] = yaml(coverageRegex)
 
 		return yamlMap(elements)
 	}
