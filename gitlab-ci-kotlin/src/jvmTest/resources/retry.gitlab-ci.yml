@@ -1,0 +1,102 @@
+
+stages: 
+  - build
+simpleRetry: 
+  needs: []
+  cache: 
+    paths: []
+  stage: build
+  interruptible: false
+  script: 
+    - echo 'Simple retry test'
+  retry: 2
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+retryWithWhen: 
+  needs: []
+  cache: 
+    paths: []
+  stage: build
+  interruptible: false
+  script: 
+    - echo 'Retry with when type test'
+  retry: 
+    max: 2
+    when: runner_system_failure
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+retryWithMultipleWhen: 
+  needs: []
+  cache: 
+    paths: []
+  stage: build
+  interruptible: false
+  script: 
+    - echo 'Retry with multiple when types test'
+  retry: 
+    max: 2
+    when: 
+      - runner_system_failure
+      - api_failure
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+retryWithExitCode: 
+  needs: []
+  cache: 
+    paths: []
+  stage: build
+  interruptible: false
+  script: 
+    - echo 'Retry with exit code test'
+  retry: 
+    max: 2
+    exit_codes: 137
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+retryWithMultipleExitCodes: 
+  needs: []
+  cache: 
+    paths: []
+  stage: build
+  interruptible: false
+  script: 
+    - echo 'Retry with multiple exit codes test'
+  retry: 
+    max: 2
+    exit_codes: 
+      - 137
+      - 255
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+retryWithBoth: 
+  needs: []
+  cache: 
+    paths: []
+  stage: build
+  interruptible: false
+  script: 
+    - echo 'Retry with both when type and exit code test'
+  retry: 
+    max: 2
+    exit_codes: 137
+    when: runner_system_failure
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always

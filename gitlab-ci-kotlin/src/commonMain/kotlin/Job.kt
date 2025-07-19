@@ -23,6 +23,7 @@ import opensavvy.gitlab.ci.yaml.Yaml
 import opensavvy.gitlab.ci.yaml.yaml
 import opensavvy.gitlab.ci.yaml.yamlList
 import opensavvy.gitlab.ci.yaml.yamlMap
+import org.intellij.lang.annotations.Language
 
 /**
  * A single execution step in a [pipeline][GitLabCi].
@@ -52,7 +53,7 @@ class Job internal constructor(
 	 * The container image used to execute this job, if any.
 	 */
 	private var image: ContainerImage? = null
-		private set(value) {
+		set(value) {
 			if (field != null && field != value)
 				System.err.println("Job '$name': setting the image to $value overrides previous setting $field")
 			field = value
@@ -396,7 +397,89 @@ class Job internal constructor(
 		artifacts.apply(configuration)
 	}
 
+	// endregion
+	// region Retry
+
+	private var retryConfig: Retry? = null
+
+	/**
+	 * Configures how many times a job is retried if it fails.
+	 * If not defined, defaults to 0 and jobs do not retry.
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     retry(2) {
+	 *         whenType(RetryWhen.RunnerSystemFailure)
+	 *         onExitCode(137)
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#retry)
+	 */
+	@GitLabCiDsl
+	fun retry(max: Int, configuration: Retry.() -> Unit = {}) {
+		require(max in 0..2) { "Retry max must be 0, 1, or 2, but was $max" }
+		retryConfig = Retry(max).apply(configuration)
+	}
+
 	//endregion
+	// region Code coverage
+
+	private var coverageRegex: String? = null
+
+	/**
+	 * Declares a [regular expression][regex] to configure how code coverage is
+	 * extracted from the job output. The coverage is shown in the UI if at least one
+	 * line of the job output matches [regex].
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     script {
+	 *         shell("echo Code coverage: 99%")
+	 *     }
+	 *
+	 *     coverage("Code coverage: \d+(?:\.\d+)?")
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#coverage)
+	 */
+	@GitLabCiDsl
+	fun coverage(@Language("JSRegexp") regex: String) {
+		coverageRegex = "/$regex/"
+	}
+
+	// endregion
+	// region Interruptible
+
+	private var isInterruptible: Boolean = false
+
+	/**
+	 * Determines whether this job can be safely canceled after it has started.
+	 *
+	 * If set to `true`, if a new commit is pushed to the same branch, this job will be canceled.
+	 *
+	 * If set to `false` (the default), if a new commit is pushed to the same branch, the job and any later jobs
+	 * in the pipeline will continue executing.
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#interruptible)
+	 */
+	fun interruptible(bool: Boolean) {
+		isInterruptible = bool
+	}
+
+	// endregion
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -430,6 +513,14 @@ class Job internal constructor(
 		elements[yaml("cache")] = yaml(cache)
 
 		elements[yaml("artifacts")] = yaml(artifacts)
+
+		if (coverageRegex != null)
+			elements[yaml("coverage")] = yaml(coverageRegex)
+
+		if (retryConfig != null)
+			elements[yaml("retry")] = yaml(retryConfig!!)
+
+		elements[yaml("interruptible")] = yaml(isInterruptible)
 
 		return yamlMap(elements)
 	}

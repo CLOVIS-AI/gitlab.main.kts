@@ -11,6 +11,7 @@ dockerBuild:
   services: 
     - 
       name: 'docker:20.10-dind'
+  interruptible: false
   script: 
     - 'docker build --pull --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from $CI_REGISTRY_IMAGE/backend:latest --tag $CI_REGISTRY_IMAGE/backend:build-$CI_MERGE_REQUEST_IID -f Dockerfile .'
     - 'docker push $CI_REGISTRY_IMAGE/backend:build-$CI_MERGE_REQUEST_IID'
@@ -36,6 +37,7 @@ docker-publish:
   services: 
     - 
       name: 'docker:20.10-dind'
+  interruptible: false
   script: 
     - 'docker pull $CI_REGISTRY_IMAGE/backend:build-$CI_MERGE_REQUEST_IID '
     - 'docker tag $CI_REGISTRY_IMAGE/backend:build-$CI_MERGE_REQUEST_IID $CI_REGISTRY_IMAGE/backend:2.0'

@@ -18,6 +18,9 @@ package opensavvy.gitlab.ci.plugins
 
 import opensavvy.gitlab.ci.Job
 import opensavvy.gitlab.ci.Variable
+import opensavvy.gitlab.ci.plugins.Gradle.Companion.gradle
+import opensavvy.gitlab.ci.plugins.Gradle.Companion.gradlew
+import opensavvy.gitlab.ci.plugins.Gradle.Companion.useGradle
 import opensavvy.gitlab.ci.script.CommandDsl
 import opensavvy.gitlab.ci.script.shell
 
@@ -111,6 +114,9 @@ class Gradle private constructor(private val dsl: CommandDsl, private val isWrap
 			artifacts {
 				junit("'**/build/test-results/**/TEST-*.xml'")
 			}
+
+			// Kover's :koverLog format
+			coverage("application line coverage: (\\d+\\.?\\d*%)")
 		}
 
 		/**
