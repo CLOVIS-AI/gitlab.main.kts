@@ -43,6 +43,10 @@ import opensavvy.gitlab.ci.script.shell
  * }
  * ```
  *
+ * ### Job extensions
+ *
+ * - [useGradle]: Enables the plugin and preconfigures GitLab to import test reports.
+ *
  * @see useGradle Enable this plugin.
  * @see task Run a task.
  */

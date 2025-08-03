@@ -19,16 +19,69 @@ package opensavvy.gitlab.ci.plugins
 import opensavvy.gitlab.ci.script.CommandDsl
 import opensavvy.gitlab.ci.script.shell
 
+/**
+ * Integrate [Helm](https://helm.sh/) into your build.
+ *
+ * This plugin adds the [helm] extension to scripts:
+ * ```kotlin
+ * val deploy by job {
+ *     script {
+ *         helm.addRepository("mongodb", "https://mongodb.github.io/helm-charts")
+ *         helm.updateRepositories()
+ *         helm.deploy("community-operator", "mongodb/community-operator")
+ *     }
+ * }
+ * ```
+ */
 class Helm private constructor(private val dsl: CommandDsl) {
 
+	/**
+	 * Adds a Helm repository.
+	 *
+	 * ```kotlin
+	 * script {
+	 *     helm.addRepository("mongodb", "https://mongodb.github.io/helm-charts")
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://helm.sh/docs/helm/helm_repo_add/)
+	 */
 	fun addRepository(name: String, url: String) = with(dsl) {
 		shell("helm repo add $name $url")
 	}
 
+	/**
+	 * Updates all repositories.
+	 *
+	 * ```kotlin
+	 * script {
+	 *     helm.updateRepositories()
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://helm.sh/docs/helm/helm_repo_update/)
+	 */
 	fun updateRepositories() = with(dsl) {
 		shell("helm repo update")
 	}
 
+	/**
+	 * Deploys the [chart] as [release].
+	 *
+	 * ```kotlin
+	 * script {
+	 *     helm.deploy("community-operator", "mongodb/community-operator")
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://helm.sh/docs/helm/helm_upgrade/)
+	 */
 	fun deploy(
 		release: String,
 		chart: String,
@@ -57,6 +110,13 @@ class Helm private constructor(private val dsl: CommandDsl) {
 	}
 
 	companion object {
+		/**
+		 * Accesses Helm commands.
+		 *
+		 * To use this plugin, the `helm` command must be available to this job.
+		 *
+		 * @see Helm
+		 */
 		val CommandDsl.helm get() = Helm(this)
 	}
 }
