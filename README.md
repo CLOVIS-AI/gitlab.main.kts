@@ -44,7 +44,7 @@ The Yaml syntax shines in this small example, but the real world is much more co
 - Type-safety with powerful auto-completion.
 - API versioning: we can deprecate and remove syntax without breaking your build, upgrade when you're ready to.
 
-To learn more about the project, view the [documentation](https://opensavvy.gitlab.io/automation/gitlab-ci.kt/docs/).
+To learn more about the project, view the [documentation](https://gitlab-ci-kts.opensavvy.dev).
 
 ## Ki, the Kotlin Interactive Shell
 
