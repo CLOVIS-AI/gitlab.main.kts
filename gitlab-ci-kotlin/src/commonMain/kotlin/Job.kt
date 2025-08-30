@@ -480,6 +480,40 @@ class Job internal constructor(
 	}
 
 	// endregion
+	// region Environment
+
+	private val environment = Environment()
+
+	/**
+	 * Tells GitLab about a service deployed by this job, so it can appear in the UI.
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val deploy-qa by job {
+	 *     script {
+	 *         // …
+	 *     }
+	 *
+	 *     environment {
+	 *         name("qa")
+	 *         url("https://qa.your.app/dashboard")
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Explanation](https://docs.gitlab.com/ci/environments/)
+	 * - [Syntax reference](https://docs.gitlab.com/ci/yaml/#environment)
+	 * - [Review apps](https://docs.gitlab.com/ci/review_apps/)
+	 */
+	@GitLabCiDsl
+	fun environment(configuration: Environment.() -> Unit) {
+		environment.apply(configuration)
+	}
+
+	// endregion
 
 	override fun toYaml(): Yaml {
 		val elements = HashMap<Yaml, Yaml>()
@@ -519,6 +553,9 @@ class Job internal constructor(
 
 		if (retryConfig != null)
 			elements[yaml("retry")] = yaml(retryConfig!!)
+
+		if (environment.name != null)
+			elements[yaml("environment")] = yaml(environment)
 
 		elements[yaml("interruptible")] = yaml(isInterruptible)
 
