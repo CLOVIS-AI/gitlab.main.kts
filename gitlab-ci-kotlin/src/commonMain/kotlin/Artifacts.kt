@@ -854,26 +854,14 @@ class Artifacts : YamlExport {
 
 	//endregion
 
-	override fun toYaml(): Yaml {
-		val data = HashMap<Yaml, Yaml>()
-
-		data[yaml("paths")] = yamlList(includes)
-		data[yaml("exclude")] = yamlList(excludes)
-
-		if (expireIn != null)
-			data[yaml("expire_in")] = yaml(expireIn)
-
-		if (exposeAs != null)
-			data[yaml("expose_as")] = yaml(exposeAs)
-
-		if (name != null)
-			data[yaml("name")] = yaml(name)
-
-		data[yaml("reports")] = yamlMap(reports)
-
-		data[yaml("when")] = yaml(rule)
-
-		return yamlMap(data)
+	override fun toYaml(): Yaml = yamlMap {
+		add("paths", includes)
+		add("exclude", excludes)
+		addNotNull("expire_in", expireIn)
+		addNotNull("expose_as", exposeAs)
+		addNotNull("name", name)
+		add("reports", reports)
+		add("when", rule)
 	}
 
 }

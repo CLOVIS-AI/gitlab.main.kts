@@ -515,51 +515,23 @@ class Job internal constructor(
 
 	// endregion
 
-	override fun toYaml(): Yaml {
-		val elements = HashMap<Yaml, Yaml>()
-
-		if (image != null)
-			elements[yaml("image")] = yaml(image!!)
-
-		if (services.isNotEmpty())
-			elements[yaml("services")] = yamlList(services)
-
-		if (stage != null)
-			elements[yaml("stage")] = yaml(stage.name)
-
-		if (script.isNotEmpty())
-			elements[yaml("script")] = yamlList(script)
-
-		if (beforeScript.isNotEmpty())
-			elements[yaml("before_script")] = yamlList(beforeScript)
-
-		if (afterScript.isNotEmpty())
-			elements[yaml("after_script")] = yamlList(afterScript)
-
-		if (tags.isNotEmpty())
-			elements[yaml("tags")] = yamlList(tags.map { yaml(it) })
-
-		elements[yaml("needs")] = yamlList(needs)
-
-		if (variables.isNotEmpty())
-			elements[yaml("variables")] = yamlMap(variables)
-
-		elements[yaml("cache")] = yaml(cache)
-
-		elements[yaml("artifacts")] = yaml(artifacts)
-
-		if (coverageRegex != null)
-			elements[yaml("coverage")] = yaml(coverageRegex)
-
-		if (retryConfig != null)
-			elements[yaml("retry")] = yaml(retryConfig!!)
-
+	override fun toYaml(): Yaml = yamlMap {
+		addNotNull("image", image)
+		addNotEmpty("services", services)
+		addNotNull("stage", stage?.name)
+		addNotEmpty("script", script)
+		addNotEmpty("before_script", beforeScript)
+		addNotEmpty("after_script", afterScript)
+		addNotEmpty("tags", tags)
+		add("needs", needs)
+		addNotEmpty("variables", variables)
+		add("cache", cache)
+		add("artifacts", artifacts)
+		addNotNull("coverage", coverageRegex)
+		addNotNull("retry", retryConfig)
 		if (environment.name != null)
-			elements[yaml("environment")] = yaml(environment)
-
-		elements[yaml("interruptible")] = yaml(isInterruptible)
-
-		return yamlMap(elements)
+			add("environment", environment)
+		add("interruptible", isInterruptible)
 	}
 
 	companion object {
