@@ -333,7 +333,7 @@ stages:
     when: always
 publish: 
   before_script: 
-    - pacman -Syuu git jre-openjdk-headless
+    - pacman -Syuu --noconfirm git jre-openjdk-headless
     - export JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v java))))
   needs: []
   coverage: '/application line coverage: (\d+\.?\d*%)/'

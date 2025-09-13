@@ -41,7 +41,7 @@ class Pacman private constructor(private val dsl: CommandDsl) {
 	 * Executes `pacman -Syuu` [pkg].
 	 */
 	fun sync(vararg pkg: String) = with(dsl) {
-		shell("pacman -Syuu ${pkg.joinToString(separator = " ")}")
+		shell("pacman -Syuu --noconfirm ${pkg.joinToString(separator = " ")}")
 	}
 
 	companion object {
