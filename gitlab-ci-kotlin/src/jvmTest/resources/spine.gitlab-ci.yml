@@ -360,7 +360,7 @@ publish:
 dokka: 
   needs: []
   image: 
-    name: 'openjdk:latest'
+    name: openjdk
   cache: 
     paths: []
   interruptible: false
@@ -381,7 +381,7 @@ pages:
       artifacts: true
       optional: false
   image: 
-    name: 'alpine:latest'
+    name: alpine
   cache: 
     paths: []
   stage: publish

@@ -64,7 +64,7 @@ deploy:
       artifacts: false
       optional: false
   image: 
-    name: '$CI_REGISTRY_IMAGE/build/k8s:latest'
+    name: $CI_REGISTRY_IMAGE/build/k8s
   cache: 
     paths: []
   stage: deploy

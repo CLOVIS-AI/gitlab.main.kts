@@ -81,8 +81,8 @@ class Job internal constructor(
 	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#image).
 	 */
 	@GitLabCiDsl
-	fun image(name: String, version: String = "latest", configuration: ContainerImage.() -> Unit = {}) {
-		image = ContainerImage("$name:$version").apply(configuration)
+	fun image(name: String, version: String? = null, configuration: ContainerImage.() -> Unit = {}) {
+		image = ContainerImage(listOfNotNull(name, version).joinToString(":")).apply(configuration)
 	}
 
 	private val services = HashSet<ContainerService>()
@@ -104,8 +104,8 @@ class Job internal constructor(
 	 * - [Official documentation](https://docs.gitlab.com/ee/ci/yaml/#services).
 	 */
 	@GitLabCiDsl
-	fun service(name: String, version: String = "latest", configuration: ContainerService.() -> Unit = {}) {
-		services += ContainerService("$name:$version").apply(configuration)
+	fun service(name: String, version: String? = null, configuration: ContainerService.() -> Unit = {}) {
+		services += ContainerService(listOfNotNull(name, version).joinToString(":")).apply(configuration)
 	}
 
 	//endregion

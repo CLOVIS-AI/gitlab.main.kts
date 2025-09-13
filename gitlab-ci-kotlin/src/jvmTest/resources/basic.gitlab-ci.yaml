@@ -6,7 +6,7 @@ stages:
 'logger:publish': 
   needs: []
   image: 
-    name: 'archlinux:latest'
+    name: archlinux
   cache: 
     paths: []
   stage: publish
@@ -22,7 +22,7 @@ stages:
 'backbone:publish': 
   needs: []
   image: 
-    name: 'archlinux:latest'
+    name: archlinux
   cache: 
     paths: []
   stage: publish
