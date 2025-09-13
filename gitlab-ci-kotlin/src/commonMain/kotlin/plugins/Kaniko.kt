@@ -157,14 +157,12 @@ class Kaniko private constructor(private val dsl: CommandDsl) {
 		}
 
 		/**
-		 * Creates a job that renames the image [imageName] to [newImageName]
-		 * and changes its version from [oldVersion] to [newVersion].
+		 * Creates a job that changes the version of the image [imageName] from [oldVersion] to [newVersion].
 		 *
 		 * If the image names contain registry urls, the images are pull/pushed to the respective registry.
 		 */
 		fun GitLabCi.kanikoRename(
 			imageName: String,
-			newImageName: String = imageName,
 			oldVersion: String = defaultVersion,
 			newVersion: String = "latest",
 			jobName: String? = null,
@@ -177,7 +175,7 @@ class Kaniko private constructor(private val dsl: CommandDsl) {
 
 			script {
 				shell($$"""crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY""")
-				shell($$"""crane tag "$$imageName:$$oldVersion" "$$newImageName:$$newVersion"""")
+				shell($$"""crane tag "$$imageName:$$oldVersion" "$$newVersion"""")
 			}
 
 			block()
