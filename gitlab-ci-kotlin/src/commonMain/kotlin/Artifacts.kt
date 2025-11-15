@@ -769,7 +769,7 @@ class Artifacts : YamlExport {
 	 */
 	@GitLabCiDsl
 	fun metrics(path: String) {
-		reports[yaml("metric")] = yaml(path)
+		reports[yaml("metrics")] = yaml(path)
 	}
 
 	/**
