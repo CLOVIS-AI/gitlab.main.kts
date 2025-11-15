@@ -31,10 +31,6 @@ kotlin {
 		implementation(libsCommon.opensavvy.prepared.testBalloon)
 		implementation(libsCommon.opensavvy.prepared.filesystem)
 	}
-
-	compilerOptions {
-		freeCompilerArgs.set(listOf("-Xmulti-dollar-interpolation"))
-	}
 }
 
 library {
