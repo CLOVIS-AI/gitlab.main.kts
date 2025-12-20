@@ -108,7 +108,7 @@ Instead, we will use GitLab's [downstream pipelines](https://docs.gitlab.com/ee/
 Create a file named `.gitlab-ci.yml` at the root of the repository, with the following content:
 ```yaml
 compile kotlin pipeline:
-  image: REPLACE-THIS #(1)!
+  image: registry.gitlab.com/opensavvy/automation/gitlab-ci.kt/kotlin:latest #(1)!
   script:
     - ./gitlab-ci.main.kts > kotlin-ci.yml
   
@@ -120,7 +120,7 @@ run kotlin pipeline:
     strategy: depend
 ```
 
-1. Use any Docker image which contains the `kotlin` binary.
+1. Use any Docker image which contains the `kotlin` binary. We build a custom `kotlin` image that you can find [here](https://gitlab.com/opensavvy/automation/gitlab-ci.kt/container_registry/9576542).
 
 Now, each time you push a new commit, GitLab will recompile the Kotlin script to generate the Yaml configuration file, and then start a child pipeline running that Yaml file.
 
