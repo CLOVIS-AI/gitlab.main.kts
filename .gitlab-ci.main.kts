@@ -5,8 +5,11 @@
 
 import opensavvy.gitlab.ci.*
 import opensavvy.gitlab.ci.Environment.EnvironmentTier.Development
+import opensavvy.gitlab.ci.plugins.Docker
 import opensavvy.gitlab.ci.plugins.Gradle.Companion.gradlew
 import opensavvy.gitlab.ci.plugins.Gradle.Companion.useGradle
+import opensavvy.gitlab.ci.plugins.Kaniko.Companion.kanikoBuild
+import opensavvy.gitlab.ci.plugins.Kaniko.Companion.kanikoRename
 import opensavvy.gitlab.ci.script.shell
 
 // https://gitlab.com/opensavvy/automation/containers/-/releases
@@ -242,6 +245,42 @@ gitlabCi {
 				include("public")
 			}
 
+			interruptible(false)
+		}
+	}
+
+	// endregion
+	// region Kotlin image
+
+	val kotlinImage = "${Variable.Registry.image}/kotlin"
+
+	val buildKotlinImage by kanikoBuild(
+		imageName = kotlinImage,
+		context = "./docker",
+		dockerfile = "./docker/kotlin.dockerfile",
+		stage = build,
+	) {
+		interruptible(true)
+	}
+
+	val testKotlinImage by job(stage = test) {
+		image(kotlinImage, version = Docker.defaultVersion)
+		dependsOn(buildKotlinImage)
+		variable("GIT_DEPTH", "1")
+
+		script {
+			shell("./.gitlab-ci.main.kts")
+		}
+
+		interruptible(true)
+	}
+
+	if (Value.isDefaultBranch || Value.isTag) {
+		val publishKotlinImage by kanikoRename(
+			imageName = kotlinImage,
+			stage = deploy,
+			newVersion = if (Value.isTag) Value.Commit.tag!! else "latest",
+		) {
 			interruptible(false)
 		}
 	}
