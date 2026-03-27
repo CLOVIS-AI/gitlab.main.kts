@@ -1,0 +1,63 @@
+
+stages: 
+  - test
+allowFailureTrue: 
+  needs: []
+  cache: 
+    paths: []
+  allow_failure: true
+  stage: test
+  interruptible: false
+  script: 
+    - exit 1
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+allowFailureFalse: 
+  needs: []
+  cache: 
+    paths: []
+  allow_failure: false
+  stage: test
+  interruptible: false
+  script: 
+    - exit 1
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+allowFailureExitCode: 
+  needs: []
+  cache: 
+    paths: []
+  allow_failure: 
+    exit_codes: 137
+  stage: test
+  interruptible: false
+  script: 
+    - exit 137
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+allowFailureMultipleExitCodes: 
+  needs: []
+  cache: 
+    paths: []
+  allow_failure: 
+    exit_codes: 
+      - 137
+      - 255
+  stage: test
+  interruptible: false
+  script: 
+    - exit 255
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always

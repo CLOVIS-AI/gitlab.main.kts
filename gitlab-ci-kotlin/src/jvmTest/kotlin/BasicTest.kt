@@ -95,6 +95,44 @@ val BasicTest by preparedSuite {
 		assertEqualsFile("retry.gitlab-ci.yml", yaml)
 	}
 
+	test("Test allowFailure functionality") {
+		val pipeline = gitlabCi {
+			val test by stage()
+
+			// Simple allowFailure true
+			job("allowFailureTrue", stage = test) {
+				script { shell("exit 1") }
+				allowFailure(true)
+			}
+
+			// Simple allowFailure false
+			job("allowFailureFalse", stage = test) {
+				script { shell("exit 1") }
+				allowFailure(false)
+			}
+
+			// allowFailure with single exit code
+			job("allowFailureExitCode", stage = test) {
+				script { shell("exit 137") }
+				allowFailure {
+					onExitCode(137)
+				}
+			}
+
+			// allowFailure with multiple exit codes
+			job("allowFailureMultipleExitCodes", stage = test) {
+				script { shell("exit 255") }
+				allowFailure {
+					onExitCode(137)
+					onExitCode(255)
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("allow-failure.gitlab-ci.yml", yaml)
+	}
+
 	test("Generate a basic CI inspired by Pedestal") {
 		val pipeline = gitlabCi {
 			val build by stage()
