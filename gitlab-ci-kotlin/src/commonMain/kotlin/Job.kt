@@ -428,6 +428,59 @@ class Job internal constructor(
 	}
 
 	//endregion
+	// region Allow failure
+
+	private var allowFailureConfig: AllowFailure? = null
+
+	/**
+	 * Use `allowFailure` to determine whether a pipeline should continue running when a job fails.
+	 *
+	 * To let the pipeline continue running subsequent jobs, use `allowFailure(true)`.
+	 * To stop the pipeline from running subsequent jobs, use `allowFailure(false)` (this is the default).
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     allowFailure(true)
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#allow_failure)
+	 */
+	@GitLabCiDsl
+	fun allowFailure(enabled: Boolean) {
+		allowFailureConfig = AllowFailure(enabled)
+	}
+
+	/**
+	 * Use `allowFailure` to determine whether a pipeline should continue running when a job fails.
+	 *
+	 * This variant allows specifying which exit codes are allowed to fail.
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val test by job {
+	 *     allowFailure {
+	 *         onExitCode(137)
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#allow_failure)
+	 * - [Official documentation: exit codes](https://docs.gitlab.com/ci/yaml/#allow_failureexit_codes)
+	 */
+	@GitLabCiDsl
+	fun allowFailure(configuration: AllowFailure.() -> Unit) {
+		allowFailureConfig = AllowFailure().apply(configuration)
+	}
+
+	// endregion
 	// region Code coverage
 
 	private var coverageRegex: String? = null
@@ -529,6 +582,7 @@ class Job internal constructor(
 		add("artifacts", artifacts)
 		addNotNull("coverage", coverageRegex)
 		addNotNull("retry", retryConfig)
+		addNotNull("allow_failure", allowFailureConfig)
 		if (environment.name != null)
 			add("environment", environment)
 		add("interruptible", isInterruptible)
