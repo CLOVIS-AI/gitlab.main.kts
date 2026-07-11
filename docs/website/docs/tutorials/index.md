@@ -8,7 +8,7 @@ Pre-requisites:
 - [Install Java](https://www.java.com/en/download/help/download_options.html).
 - [Install the Kotlin compiler](https://kotlinlang.org/docs/command-line.html).
 
-If you prefer using an IDE, IntelliJ Community will install all of these automatically.
+If you prefer using an IDE, IntelliJ (including the free version) will install all of these automatically.
 
 ## Authoring the pipeline
 
