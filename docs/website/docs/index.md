@@ -2,7 +2,7 @@
 template: home.html
 ---
 
-# Welcome!
+# GitLab CI: Replace YAML by Kotlin
 
 Authoring complex GitLab CI builds is often made more complicated by the need to express them in Yaml.
 Instead, this project aims to create GitLab CI pipelines from [Kotlin](https://kotlinlang.org/).

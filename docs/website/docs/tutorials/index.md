@@ -1,4 +1,4 @@
-# Getting started
+# Write a GitLab CI pipeline in Kotlin instead of YAML
 
 Welcome to GitLab CI in Kotlin! This tutorial teaches how to create a simple GitLab CI pipeline in Kotlin and configure the project to use it.
 
