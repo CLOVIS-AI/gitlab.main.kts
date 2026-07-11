@@ -111,6 +111,9 @@ compile kotlin pipeline:
   image: registry.gitlab.com/opensavvy/automation/gitlab-ci.kt/kotlin:latest #(1)!
   script:
     - ./gitlab-ci.main.kts > kotlin-ci.yml
+  artifacts:
+    paths:
+      - kotlin-ci.yml
   
 run kotlin pipeline:
   trigger:
