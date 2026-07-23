@@ -133,6 +133,45 @@ val BasicTest by preparedSuite {
 		assertEqualsFile("allow-failure.gitlab-ci.yml", yaml)
 	}
 
+	test("Test afterScript functionality") {
+		val pipeline = gitlabCi {
+			val test by stage()
+
+			// Single command in afterScript
+			job("afterScriptSingle", stage = test) {
+				script { shell("echo 'main script'") }
+				afterScript {
+					shell("echo 'cleanup'")
+				}
+			}
+
+			// Multiple commands in afterScript
+			job("afterScriptMultiple", stage = test) {
+				script { shell("echo 'main script'") }
+				afterScript {
+					shell("echo 'first cleanup step'")
+					shell("echo 'second cleanup step'")
+				}
+			}
+
+			// afterScript combined with beforeScript and script
+			job("afterScriptWithBeforeScript", stage = test) {
+				beforeScript {
+					shell("echo 'setup'")
+				}
+				script {
+					shell("echo 'main script'")
+				}
+				afterScript {
+					shell("echo 'cleanup'")
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("after-script.gitlab-ci.yml", yaml)
+	}
+
 	test("Generate a basic CI inspired by Pedestal") {
 		val pipeline = gitlabCi {
 			val build by stage()

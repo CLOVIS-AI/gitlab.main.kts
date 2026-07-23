@@ -1,0 +1,51 @@
+
+stages: 
+  - test
+afterScriptSingle: 
+  needs: []
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - echo 'main script'
+  after_script: 
+    - echo 'cleanup'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+afterScriptMultiple: 
+  needs: []
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - echo 'main script'
+  after_script: 
+    - echo 'first cleanup step'
+    - echo 'second cleanup step'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+afterScriptWithBeforeScript: 
+  before_script: 
+    - echo 'setup'
+  needs: []
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - echo 'main script'
+  after_script: 
+    - echo 'cleanup'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
