@@ -1,0 +1,106 @@
+
+stages: 
+  - test
+artifactsPathsAndExclude: 
+  needs: []
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - make build
+  artifacts: 
+    reports: 
+    paths: 
+      - binaries/
+      - .config
+    exclude: 
+      - binaries/**/*.o
+    when: always
+artifactsMetadata: 
+  needs: []
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - echo 'test' > file.txt
+  artifacts: 
+    reports: 
+    paths: 
+      - file.txt
+    name: job1-artifacts-file
+    expose_as: artifact 1
+    exclude: []
+    expire_in: 1 week
+    when: always
+artifactsUntracked: 
+  needs: []
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - make build
+  artifacts: 
+    reports: 
+    paths: []
+    untracked: true
+    exclude: []
+    when: always
+artifactsAccess: 
+  needs: []
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - make build
+  artifacts: 
+    reports: 
+    access: developer
+    paths: []
+    exclude: []
+    when: always
+artifactsPublic: 
+  needs: []
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - make build
+  artifacts: 
+    reports: 
+    public: false
+    paths: []
+    exclude: []
+    when: always
+artifactsWhenOnFailure: 
+  needs: []
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - run-tests
+  artifacts: 
+    reports: 
+    paths: 
+      - logs/
+    exclude: []
+    when: on_failure
+artifactsReports: 
+  needs: []
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - ./gradlew test
+  artifacts: 
+    reports: 
+      junit: build/test-results/test/TEST-*.xml
+    paths: []
+    exclude: []
+    when: always

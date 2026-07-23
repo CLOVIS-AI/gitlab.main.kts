@@ -172,6 +172,77 @@ val BasicTest by preparedSuite {
 		assertEqualsFile("after-script.gitlab-ci.yml", yaml)
 	}
 
+	test("Test artifacts functionality") {
+		val pipeline = gitlabCi {
+			val test by stage()
+
+			// paths and exclude
+			job("artifactsPathsAndExclude", stage = test) {
+				script { shell("make build") }
+				artifacts {
+					include("binaries/")
+					include(".config")
+					exclude("binaries/**/*.o")
+				}
+			}
+
+			// expire_in, expose_as and name
+			job("artifactsMetadata", stage = test) {
+				script { shell("echo 'test' > file.txt") }
+				artifacts {
+					include("file.txt")
+					expireIn("1 week")
+					exposeAs("artifact 1")
+					name("job1-artifacts-file")
+				}
+			}
+
+			// untracked
+			job("artifactsUntracked", stage = test) {
+				script { shell("make build") }
+				artifacts {
+					includeUntracked(true)
+				}
+			}
+
+			// access
+			job("artifactsAccess", stage = test) {
+				script { shell("make build") }
+				artifacts {
+					access(AccessLevel.Developer)
+				}
+			}
+
+			// public (deprecated, superseded by access)
+			job("artifactsPublic", stage = test) {
+				script { shell("make build") }
+				artifacts {
+					public(false)
+				}
+			}
+
+			// when
+			job("artifactsWhenOnFailure", stage = test) {
+				script { shell("run-tests") }
+				artifacts {
+					include("logs/")
+					rule(When.OnFailure)
+				}
+			}
+
+			// reports
+			job("artifactsReports", stage = test) {
+				script { shell("./gradlew test") }
+				artifacts {
+					junit("build/test-results/test/TEST-*.xml")
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("artifacts.gitlab-ci.yml", yaml)
+	}
+
 	test("Generate a basic CI inspired by Pedestal") {
 		val pipeline = gitlabCi {
 			val build by stage()
