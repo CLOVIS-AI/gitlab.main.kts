@@ -243,6 +243,112 @@ val BasicTest by preparedSuite {
 		assertEqualsFile("artifacts.gitlab-ci.yml", yaml)
 	}
 
+	test("Test cache functionality") {
+		val pipeline = gitlabCi {
+			val test by stage()
+
+			// paths and simple key
+			job("cachePathsAndKey", stage = test) {
+				script { shell("echo 'This job uses a cache.'") }
+				cache {
+					key("binaries-cache")
+					include("binaries/*.apk")
+					include(".config")
+				}
+			}
+
+			// key:files
+			job("cacheKeyFiles", stage = test) {
+				script { shell("echo 'This job uses a cache.'") }
+				cache {
+					keyFile("Gemfile.lock")
+					keyFile("package.json")
+					include("vendor/ruby")
+					include("node_modules")
+				}
+			}
+
+			// key:files_commits
+			job("cacheKeyFilesCommits", stage = test) {
+				script { shell("echo 'This job uses a commit-based cache.'") }
+				cache {
+					keyFileCommit("package.json")
+					keyFileCommit("yarn.lock")
+					include("node_modules")
+				}
+			}
+
+			// key:prefix
+			job("cacheKeyPrefix", stage = test) {
+				script { shell("echo 'This rspec job uses a cache.'") }
+				cache {
+					keyFile("Gemfile.lock")
+					keyPrefix("rspec")
+					include("vendor/ruby")
+				}
+			}
+
+			// untracked
+			job("cacheUntracked", stage = test) {
+				script { shell("test") }
+				cache {
+					untracked(true)
+					include("binaries/")
+				}
+			}
+
+			// unprotect
+			job("cacheUnprotect", stage = test) {
+				script { shell("test") }
+				cache {
+					unprotect(true)
+				}
+			}
+
+			// when
+			job("cacheWhenAlways", stage = test) {
+				script { shell("rspec") }
+				cache {
+					include("rspec/")
+					rule(When.Always)
+				}
+			}
+
+			// policy
+			job("cachePolicyPush", stage = test) {
+				script { shell("This job only downloads dependencies and builds the cache.") }
+				cache {
+					key("gems")
+					include("vendor/bundle")
+					policy(CachePolicy.Push)
+				}
+			}
+
+			job("cachePolicyPull", stage = test) {
+				script { shell("This job script uses the cache, but does not update it.") }
+				cache {
+					key("gems")
+					include("vendor/bundle")
+					policy(CachePolicy.Pull)
+				}
+			}
+
+			// fallback_keys
+			job("cacheFallbackKeys", stage = test) {
+				script { shell("rspec") }
+				cache {
+					key("gems-branch")
+					include("rspec/")
+					fallbackKey("gems")
+					rule(When.Always)
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("cache.gitlab-ci.yml", yaml)
+	}
+
 	test("Generate a basic CI inspired by Pedestal") {
 		val pipeline = gitlabCi {
 			val build by stage()
