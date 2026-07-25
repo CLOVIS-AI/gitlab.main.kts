@@ -1,0 +1,19 @@
+
+stages: 
+  - dast
+dast: 
+  needs: []
+  cache: 
+    paths: []
+  stage: dast
+  dast_configuration: 
+    site_profile: Example Co
+    scanner_profile: Quick Passive Test
+  interruptible: false
+  script: 
+    - echo 'dast'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always

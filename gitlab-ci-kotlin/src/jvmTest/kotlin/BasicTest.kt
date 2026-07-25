@@ -349,6 +349,23 @@ val BasicTest by preparedSuite {
 		assertEqualsFile("cache.gitlab-ci.yml", yaml)
 	}
 
+
+	test("Test dast_configuration functionality") {
+		val pipeline = gitlabCi {
+			val dast by stage()
+
+			job("dast", stage = dast) {
+				script { shell("echo 'dast'") }
+				dastConfiguration {
+					siteProfile("Example Co")
+					scannerProfile("Quick Passive Test")
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("dast-configuration.gitlab-ci.yml", yaml)
+	}
 	test("Generate a basic CI inspired by Pedestal") {
 		val pipeline = gitlabCi {
 			val build by stage()
