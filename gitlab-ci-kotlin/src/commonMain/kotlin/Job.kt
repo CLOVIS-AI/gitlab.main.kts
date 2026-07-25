@@ -567,6 +567,36 @@ class Job internal constructor(
 	}
 
 	// endregion
+	// region DAST configuration
+
+	private var dastConfig: DastConfiguration? = null
+
+	/**
+	 * Selects the site profile and scanner profile used by this DAST job.
+	 *
+	 * Both profiles must already exist in the project. The job's stage must be `dast`.
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val dast by job(stage = dastStage) {
+	 *     dastConfiguration {
+	 *         siteProfile("Example Co")
+	 *         scannerProfile("Quick Passive Test")
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#dast_configuration)
+	 */
+	@GitLabCiDsl
+	fun dastConfiguration(configuration: DastConfiguration.() -> Unit) {
+		dastConfig = DastConfiguration().apply(configuration)
+	}
+
+	// endregion
 
 	override fun toYaml(): Yaml = yamlMap {
 		addNotNull("image", image)
@@ -585,6 +615,7 @@ class Job internal constructor(
 		addNotNull("allow_failure", allowFailureConfig)
 		if (environment.name != null)
 			add("environment", environment)
+		addNotNull("dast_configuration", dastConfig)
 		add("interruptible", isInterruptible)
 	}
 

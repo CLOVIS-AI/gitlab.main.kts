@@ -1,0 +1,114 @@
+
+stages: 
+  - deploy
+deployToProduction: 
+  needs: []
+  cache: 
+    paths: []
+  environment: 
+    name: production
+    action: start
+    url: 'https://prod.example.com'
+  stage: deploy
+  interruptible: false
+  script: 
+    - 'git push production HEAD:main'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+stopReviewApp: 
+  needs: []
+  cache: 
+    paths: []
+  environment: 
+    name: review/$CI_COMMIT_REF_SLUG
+    action: stop
+  stage: deploy
+  interruptible: false
+  script: 
+    - make delete-app
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+reviewApp: 
+  needs: []
+  cache: 
+    paths: []
+  environment: 
+    auto_stop_in: 1 day
+    name: review/$CI_COMMIT_REF_SLUG
+    action: start
+  stage: deploy
+  interruptible: false
+  script: 
+    - deploy-review-app
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+customerPortal: 
+  needs: []
+  cache: 
+    paths: []
+  environment: 
+    name: customer-portal
+    action: start
+    deployment_tier: production
+  stage: deploy
+  interruptible: false
+  script: 
+    - echo
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+deployKubernetes: 
+  needs: []
+  cache: 
+    paths: []
+  environment: 
+    kubernetes: 
+      agent: 'path/to/agent/project:agent-name'
+      dashboard: 
+        namespace: my-namespace
+        flux_resource_path: helm.toolkit.fluxcd.io/v2/namespaces/flux-system/helmreleases/helm-release-resource
+    name: production
+    action: start
+  stage: deploy
+  interruptible: false
+  script: 
+    - make deploy-app
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+deployKubernetesUnmanaged: 
+  needs: []
+  cache: 
+    paths: []
+  environment: 
+    kubernetes: 
+      agent: 'path/to/agent/project:agent-name'
+      managed_resources: 
+        enabled: false
+      dashboard: 
+        namespace: my-namespace
+        flux_resource_path: helm.toolkit.fluxcd.io/v2/namespaces/flux-system/helmreleases/helm-release-resource
+    name: production
+    action: start
+  stage: deploy
+  interruptible: false
+  script: 
+    - make deploy-app
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always

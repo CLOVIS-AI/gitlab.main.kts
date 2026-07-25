@@ -56,6 +56,9 @@ class Artifacts : YamlExport {
 	private var expireIn: String? = null
 	private var exposeAs: String? = null
 	private var name: String? = null
+	private var untracked: Boolean? = null
+	private var public: Boolean? = null
+	private var access: AccessLevel? = null
 
 	private val reports = HashMap<Yaml, Yaml>()
 
@@ -259,6 +262,72 @@ class Artifacts : YamlExport {
 	@GitLabCiDsl
 	fun rule(rule: When) {
 		this.rule = rule
+	}
+
+	/**
+	 * Adds all Git untracked files as artifacts, along with the paths defined in [include].
+	 *
+	 * Ignores configuration in the repository's `.gitignore`, so matching artifacts in `.gitignore` are included.
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * artifacts {
+	 *     untracked(true)
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#artifactsuntracked)
+	 */
+	@GitLabCiDsl
+	fun includeUntracked(untracked: Boolean) {
+		this.untracked = untracked
+	}
+
+	/**
+	 * Controls whether job artifacts in public pipelines are available for download by anonymous users.
+	 *
+	 * Superseded by [access], which offers more options. Cannot be used together with [access].
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * artifacts {
+	 *     public(false)
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#artifactspublic)
+	 */
+	@GitLabCiDsl
+	fun public(public: Boolean) {
+		this.public = public
+	}
+
+	/**
+	 * Determines who can access the job artifacts from the GitLab UI or API.
+	 *
+	 * Does not prevent forwarding artifacts to downstream pipelines. Cannot be used together with [public].
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * artifacts {
+	 *     access(AccessLevel.Developer)
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#artifactsaccess)
+	 */
+	@GitLabCiDsl
+	fun access(access: AccessLevel) {
+		this.access = access
 	}
 
 	//region Reports
@@ -860,8 +929,43 @@ class Artifacts : YamlExport {
 		addNotNull("expire_in", expireIn)
 		addNotNull("expose_as", exposeAs)
 		addNotNull("name", name)
+		addNotNull("untracked", untracked)
+		addNotNull("public", public)
+		addNotNull("access", access)
 		add("reports", reports)
 		add("when", rule)
 	}
 
+}
+
+/**
+ * Who can access job artifacts from the GitLab UI or API.
+ *
+ * ### External resources
+ *
+ * - [Official documentation](https://docs.gitlab.com/ci/yaml/#artifactsaccess)
+ */
+enum class AccessLevel(private val value: String) : YamlExport {
+	/**
+	 * Artifacts are available for download by anyone, including anonymous, guest, and reporter users (default).
+	 */
+	All("all"),
+
+	/**
+	 * Artifacts are only available for download by users with the Developer, Maintainer, or Owner role.
+	 */
+	Developer("developer"),
+
+	/**
+	 * Artifacts are only available for download by users with the Maintainer or Owner role.
+	 */
+	Maintainer("maintainer"),
+
+	/**
+	 * Artifacts are not available for download by anyone.
+	 */
+	None("none"),
+	;
+
+	override fun toYaml(): Yaml = yaml(value)
 }

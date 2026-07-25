@@ -133,6 +133,325 @@ val BasicTest by preparedSuite {
 		assertEqualsFile("allow-failure.gitlab-ci.yml", yaml)
 	}
 
+	test("Test afterScript functionality") {
+		val pipeline = gitlabCi {
+			val test by stage()
+
+			// Single command in afterScript
+			job("afterScriptSingle", stage = test) {
+				script { shell("echo 'main script'") }
+				afterScript {
+					shell("echo 'cleanup'")
+				}
+			}
+
+			// Multiple commands in afterScript
+			job("afterScriptMultiple", stage = test) {
+				script { shell("echo 'main script'") }
+				afterScript {
+					shell("echo 'first cleanup step'")
+					shell("echo 'second cleanup step'")
+				}
+			}
+
+			// afterScript combined with beforeScript and script
+			job("afterScriptWithBeforeScript", stage = test) {
+				beforeScript {
+					shell("echo 'setup'")
+				}
+				script {
+					shell("echo 'main script'")
+				}
+				afterScript {
+					shell("echo 'cleanup'")
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("after-script.gitlab-ci.yml", yaml)
+	}
+
+	test("Test artifacts functionality") {
+		val pipeline = gitlabCi {
+			val test by stage()
+
+			// paths and exclude
+			job("artifactsPathsAndExclude", stage = test) {
+				script { shell("make build") }
+				artifacts {
+					include("binaries/")
+					include(".config")
+					exclude("binaries/**/*.o")
+				}
+			}
+
+			// expire_in, expose_as and name
+			job("artifactsMetadata", stage = test) {
+				script { shell("echo 'test' > file.txt") }
+				artifacts {
+					include("file.txt")
+					expireIn("1 week")
+					exposeAs("artifact 1")
+					name("job1-artifacts-file")
+				}
+			}
+
+			// untracked
+			job("artifactsUntracked", stage = test) {
+				script { shell("make build") }
+				artifacts {
+					includeUntracked(true)
+				}
+			}
+
+			// access
+			job("artifactsAccess", stage = test) {
+				script { shell("make build") }
+				artifacts {
+					access(AccessLevel.Developer)
+				}
+			}
+
+			// public (deprecated, superseded by access)
+			job("artifactsPublic", stage = test) {
+				script { shell("make build") }
+				artifacts {
+					public(false)
+				}
+			}
+
+			// when
+			job("artifactsWhenOnFailure", stage = test) {
+				script { shell("run-tests") }
+				artifacts {
+					include("logs/")
+					rule(When.OnFailure)
+				}
+			}
+
+			// reports
+			job("artifactsReports", stage = test) {
+				script { shell("./gradlew test") }
+				artifacts {
+					junit("build/test-results/test/TEST-*.xml")
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("artifacts.gitlab-ci.yml", yaml)
+	}
+
+	test("Test cache functionality") {
+		val pipeline = gitlabCi {
+			val test by stage()
+
+			// paths and simple key
+			job("cachePathsAndKey", stage = test) {
+				script { shell("echo 'This job uses a cache.'") }
+				cache {
+					key("binaries-cache")
+					include("binaries/*.apk")
+					include(".config")
+				}
+			}
+
+			// key:files
+			job("cacheKeyFiles", stage = test) {
+				script { shell("echo 'This job uses a cache.'") }
+				cache {
+					keyFile("Gemfile.lock")
+					keyFile("package.json")
+					include("vendor/ruby")
+					include("node_modules")
+				}
+			}
+
+			// key:files_commits
+			job("cacheKeyFilesCommits", stage = test) {
+				script { shell("echo 'This job uses a commit-based cache.'") }
+				cache {
+					keyFileCommit("package.json")
+					keyFileCommit("yarn.lock")
+					include("node_modules")
+				}
+			}
+
+			// key:prefix
+			job("cacheKeyPrefix", stage = test) {
+				script { shell("echo 'This rspec job uses a cache.'") }
+				cache {
+					keyFile("Gemfile.lock")
+					keyPrefix("rspec")
+					include("vendor/ruby")
+				}
+			}
+
+			// untracked
+			job("cacheUntracked", stage = test) {
+				script { shell("test") }
+				cache {
+					untracked(true)
+					include("binaries/")
+				}
+			}
+
+			// unprotect
+			job("cacheUnprotect", stage = test) {
+				script { shell("test") }
+				cache {
+					unprotect(true)
+				}
+			}
+
+			// when
+			job("cacheWhenAlways", stage = test) {
+				script { shell("rspec") }
+				cache {
+					include("rspec/")
+					rule(When.Always)
+				}
+			}
+
+			// policy
+			job("cachePolicyPush", stage = test) {
+				script { shell("This job only downloads dependencies and builds the cache.") }
+				cache {
+					key("gems")
+					include("vendor/bundle")
+					policy(CachePolicy.Push)
+				}
+			}
+
+			job("cachePolicyPull", stage = test) {
+				script { shell("This job script uses the cache, but does not update it.") }
+				cache {
+					key("gems")
+					include("vendor/bundle")
+					policy(CachePolicy.Pull)
+				}
+			}
+
+			// fallback_keys
+			job("cacheFallbackKeys", stage = test) {
+				script { shell("rspec") }
+				cache {
+					key("gems-branch")
+					include("rspec/")
+					fallbackKey("gems")
+					rule(When.Always)
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("cache.gitlab-ci.yml", yaml)
+	}
+
+	test("Test coverage functionality") {
+		val pipeline = gitlabCi {
+			val test by stage()
+
+			job("coverageSimple", stage = test) {
+				script { shell("echo Code coverage: 99%") }
+				coverage("""Code coverage: \d+(?:\.\d+)?""")
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("coverage.gitlab-ci.yml", yaml)
+	}
+
+	test("Test dast_configuration functionality") {
+		val pipeline = gitlabCi {
+			val dast by stage()
+
+			job("dast", stage = dast) {
+				script { shell("echo 'dast'") }
+				dastConfiguration {
+					siteProfile("Example Co")
+					scannerProfile("Quick Passive Test")
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("dast-configuration.gitlab-ci.yml", yaml)
+	}
+
+	test("Test environment functionality") {
+		val pipeline = gitlabCi {
+			val deploy by stage()
+
+			// name and url
+			job("deployToProduction", stage = deploy) {
+				script { shell("git push production HEAD:main") }
+				environment {
+					name("production")
+					url("https://prod.example.com")
+				}
+			}
+
+			// action: stop
+			job("stopReviewApp", stage = deploy) {
+				script { shell("make delete-app") }
+				environment {
+					name("review/\$CI_COMMIT_REF_SLUG")
+					action(Environment.EnvironmentAction.Stop)
+				}
+			}
+
+			// auto_stop_in
+			job("reviewApp", stage = deploy) {
+				script { shell("deploy-review-app") }
+				environment {
+					name("review/\$CI_COMMIT_REF_SLUG")
+					autoStopIn("1 day")
+				}
+			}
+
+			// deployment_tier
+			job("customerPortal", stage = deploy) {
+				script { shell("echo") }
+				environment {
+					name("customer-portal")
+					tier(Environment.EnvironmentTier.Production)
+				}
+			}
+
+			// kubernetes
+			job("deployKubernetes", stage = deploy) {
+				script { shell("make deploy-app") }
+				environment {
+					name("production")
+					kubernetes {
+						agent("path/to/agent/project:agent-name")
+						dashboardNamespace("my-namespace")
+						dashboardFluxResourcePath("helm.toolkit.fluxcd.io/v2/namespaces/flux-system/helmreleases/helm-release-resource")
+					}
+				}
+			}
+
+			// kubernetes with managed_resources disabled
+			job("deployKubernetesUnmanaged", stage = deploy) {
+				script { shell("make deploy-app") }
+				environment {
+					name("production")
+					kubernetes {
+						agent("path/to/agent/project:agent-name")
+						managedResourcesEnabled(false)
+						dashboardNamespace("my-namespace")
+						dashboardFluxResourcePath("helm.toolkit.fluxcd.io/v2/namespaces/flux-system/helmreleases/helm-release-resource")
+					}
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("environment.gitlab-ci.yml", yaml)
+	}
+
 	test("Generate a basic CI inspired by Pedestal") {
 		val pipeline = gitlabCi {
 			val build by stage()

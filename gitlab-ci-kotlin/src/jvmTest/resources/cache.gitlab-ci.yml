@@ -1,0 +1,168 @@
+
+stages: 
+  - test
+cachePathsAndKey: 
+  needs: []
+  cache: 
+    paths: 
+      - binaries/*.apk
+      - .config
+    key: binaries-cache
+  stage: test
+  interruptible: false
+  script: 
+    - echo 'This job uses a cache.'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+cacheKeyFiles: 
+  needs: []
+  cache: 
+    paths: 
+      - vendor/ruby
+      - node_modules
+    key: 
+      files: 
+        - Gemfile.lock
+        - package.json
+  stage: test
+  interruptible: false
+  script: 
+    - echo 'This job uses a cache.'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+cacheKeyFilesCommits: 
+  needs: []
+  cache: 
+    paths: 
+      - node_modules
+    key: 
+      files_commits: 
+        - package.json
+        - yarn.lock
+  stage: test
+  interruptible: false
+  script: 
+    - echo 'This job uses a commit-based cache.'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+cacheKeyPrefix: 
+  needs: []
+  cache: 
+    paths: 
+      - vendor/ruby
+    key: 
+      prefix: rspec
+      files: 
+        - Gemfile.lock
+  stage: test
+  interruptible: false
+  script: 
+    - echo 'This rspec job uses a cache.'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+cacheUntracked: 
+  needs: []
+  cache: 
+    paths: 
+      - binaries/
+    untracked: true
+  stage: test
+  interruptible: false
+  script: 
+    - test
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+cacheUnprotect: 
+  needs: []
+  cache: 
+    paths: []
+    unprotect: true
+  stage: test
+  interruptible: false
+  script: 
+    - test
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+cacheWhenAlways: 
+  needs: []
+  cache: 
+    paths: 
+      - rspec/
+    when: always
+  stage: test
+  interruptible: false
+  script: 
+    - rspec
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+cachePolicyPush: 
+  needs: []
+  cache: 
+    paths: 
+      - vendor/bundle
+    key: gems
+    policy: push
+  stage: test
+  interruptible: false
+  script: 
+    - This job only downloads dependencies and builds the cache.
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+cachePolicyPull: 
+  needs: []
+  cache: 
+    paths: 
+      - vendor/bundle
+    key: gems
+    policy: pull
+  stage: test
+  interruptible: false
+  script: 
+    - This job script uses the cache, but does not update it.
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
+cacheFallbackKeys: 
+  needs: []
+  cache: 
+    paths: 
+      - rspec/
+    when: always
+    fallback_keys: 
+      - gems
+    key: gems-branch
+  stage: test
+  interruptible: false
+  script: 
+    - rspec
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always

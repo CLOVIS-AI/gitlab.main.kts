@@ -1,0 +1,17 @@
+
+stages: 
+  - test
+coverageSimple: 
+  needs: []
+  coverage: '/Code coverage: \d+(?:\.\d+)?/'
+  cache: 
+    paths: []
+  stage: test
+  interruptible: false
+  script: 
+    - 'echo Code coverage: 99%'
+  artifacts: 
+    reports: 
+    paths: []
+    exclude: []
+    when: always
