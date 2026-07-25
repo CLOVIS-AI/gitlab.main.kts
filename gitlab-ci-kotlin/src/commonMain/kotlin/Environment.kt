@@ -32,6 +32,8 @@ class Environment internal constructor() : YamlExport {
 	private var onStop: Job? = null
 	private var action: EnvironmentAction = EnvironmentAction.Start
 	private var tier: EnvironmentTier? = null
+	private var autoStopIn: String? = null
+	private var kubernetes: Kubernetes? = null
 
 	/**
 	 * Declares the name of the environment, as it will be displayed in the GitLab UI.
@@ -199,6 +201,64 @@ class Environment internal constructor() : YamlExport {
 		this.tier = tier
 	}
 
+	/**
+	 * Declares the lifetime of the environment. When the environment expires, GitLab automatically stops it.
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val reviewApp by job {
+	 *     script {
+	 *         // …
+	 *     }
+	 *
+	 *     environment {
+	 *         name("review/\$CI_COMMIT_REF_SLUG")
+	 *         autoStopIn("1 day")
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#environmentauto_stop_in)
+	 */
+	@GitLabCiDsl
+	fun autoStopIn(duration: String) {
+		this.autoStopIn = duration
+	}
+
+	/**
+	 * Configures the dashboard for Kubernetes and GitLab-managed Kubernetes resources for this environment.
+	 *
+	 * ### Example
+	 *
+	 * ```kotlin
+	 * val deploy by job {
+	 *     script {
+	 *         // …
+	 *     }
+	 *
+	 *     environment {
+	 *         name("production")
+	 *         kubernetes {
+	 *             agent("path/to/agent/project:agent-name")
+	 *             dashboardNamespace("my-namespace")
+	 *             dashboardFluxResourcePath("helm.toolkit.fluxcd.io/v2/namespaces/flux-system/helmreleases/helm-release-resource")
+	 *         }
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#environmentkubernetes)
+	 */
+	@GitLabCiDsl
+	fun kubernetes(configuration: Kubernetes.() -> Unit) {
+		this.kubernetes = Kubernetes().apply(configuration)
+	}
+
 	override fun toYaml(): Yaml {
 		val data = HashMap<Yaml, Yaml>()
 
@@ -212,6 +272,12 @@ class Environment internal constructor() : YamlExport {
 
 		if (tier != null)
 			data[yaml("deployment_tier")] = yaml(tier!!.name.lowercase())
+
+		if (autoStopIn != null)
+			data[yaml("auto_stop_in")] = yaml(autoStopIn)
+
+		if (kubernetes != null)
+			data[yaml("kubernetes")] = kubernetes!!.toYaml()
 
 		return yamlMap(data)
 	}
@@ -249,5 +315,77 @@ class Environment internal constructor() : YamlExport {
 		Testing,
 		Development,
 		Other,
+	}
+
+	/**
+	 * Configures the dashboard for Kubernetes and GitLab-managed Kubernetes resources for an [Environment].
+	 *
+	 * ### External resources
+	 *
+	 * - [Official documentation](https://docs.gitlab.com/ci/yaml/#environmentkubernetes)
+	 */
+	@GitLabCiDsl
+	class Kubernetes internal constructor() : YamlExport {
+		private var agent: String? = null
+		private var dashboardNamespace: String? = null
+		private var dashboardFluxResourcePath: String? = null
+		private var managedResourcesEnabled: Boolean? = null
+
+		/**
+		 * Declares the GitLab agent for Kubernetes used by this environment.
+		 *
+		 * The format is `path/to/agent/project:agent-name`. If the agent is connected to the project running the
+		 * pipeline, use `$CI_PROJECT_PATH:agent-name`.
+		 */
+		@GitLabCiDsl
+		fun agent(agent: String) {
+			this.agent = agent
+		}
+
+		/**
+		 * Declares the Kubernetes namespace where the environment is deployed.
+		 *
+		 * Must be set together with [agent]. Deprecated by GitLab in favor of [dashboardFluxResourcePath].
+		 */
+		@GitLabCiDsl
+		fun dashboardNamespace(namespace: String) {
+			this.dashboardNamespace = namespace
+		}
+
+		/**
+		 * Declares the full path to the Flux resource (such as a `HelmRelease`) for this environment.
+		 *
+		 * Must be set together with [agent] and [dashboardNamespace]. Deprecated.
+		 */
+		@GitLabCiDsl
+		fun dashboardFluxResourcePath(path: String) {
+			this.dashboardFluxResourcePath = path
+		}
+
+		/**
+		 * Enables or disables the GitLab-managed Kubernetes resources for this environment.
+		 */
+		@GitLabCiDsl
+		fun managedResourcesEnabled(enabled: Boolean) {
+			this.managedResourcesEnabled = enabled
+		}
+
+		override fun toYaml(): Yaml = yamlMap {
+			addNotNull("agent", agent)
+
+			if (managedResourcesEnabled != null) {
+				add("managed_resources", yamlMap { addNotNull("enabled", managedResourcesEnabled) })
+			}
+
+			if (dashboardNamespace != null || dashboardFluxResourcePath != null) {
+				add(
+					"dashboard",
+					yamlMap {
+						addNotNull("namespace", dashboardNamespace)
+						addNotNull("flux_resource_path", dashboardFluxResourcePath)
+					}
+				)
+			}
+		}
 	}
 }

@@ -379,6 +379,79 @@ val BasicTest by preparedSuite {
 		val yaml = pipeline.toYaml().toYamlString()
 		assertEqualsFile("dast-configuration.gitlab-ci.yml", yaml)
 	}
+
+	test("Test environment functionality") {
+		val pipeline = gitlabCi {
+			val deploy by stage()
+
+			// name and url
+			job("deployToProduction", stage = deploy) {
+				script { shell("git push production HEAD:main") }
+				environment {
+					name("production")
+					url("https://prod.example.com")
+				}
+			}
+
+			// action: stop
+			job("stopReviewApp", stage = deploy) {
+				script { shell("make delete-app") }
+				environment {
+					name("review/\$CI_COMMIT_REF_SLUG")
+					action(Environment.EnvironmentAction.Stop)
+				}
+			}
+
+			// auto_stop_in
+			job("reviewApp", stage = deploy) {
+				script { shell("deploy-review-app") }
+				environment {
+					name("review/\$CI_COMMIT_REF_SLUG")
+					autoStopIn("1 day")
+				}
+			}
+
+			// deployment_tier
+			job("customerPortal", stage = deploy) {
+				script { shell("echo") }
+				environment {
+					name("customer-portal")
+					tier(Environment.EnvironmentTier.Production)
+				}
+			}
+
+			// kubernetes
+			job("deployKubernetes", stage = deploy) {
+				script { shell("make deploy-app") }
+				environment {
+					name("production")
+					kubernetes {
+						agent("path/to/agent/project:agent-name")
+						dashboardNamespace("my-namespace")
+						dashboardFluxResourcePath("helm.toolkit.fluxcd.io/v2/namespaces/flux-system/helmreleases/helm-release-resource")
+					}
+				}
+			}
+
+			// kubernetes with managed_resources disabled
+			job("deployKubernetesUnmanaged", stage = deploy) {
+				script { shell("make deploy-app") }
+				environment {
+					name("production")
+					kubernetes {
+						agent("path/to/agent/project:agent-name")
+						managedResourcesEnabled(false)
+						dashboardNamespace("my-namespace")
+						dashboardFluxResourcePath("helm.toolkit.fluxcd.io/v2/namespaces/flux-system/helmreleases/helm-release-resource")
+					}
+				}
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("environment.gitlab-ci.yml", yaml)
+	}
+
 	test("Generate a basic CI inspired by Pedestal") {
 		val pipeline = gitlabCi {
 			val build by stage()
