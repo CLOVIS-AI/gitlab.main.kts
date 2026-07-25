@@ -349,6 +349,19 @@ val BasicTest by preparedSuite {
 		assertEqualsFile("cache.gitlab-ci.yml", yaml)
 	}
 
+	test("Test coverage functionality") {
+		val pipeline = gitlabCi {
+			val test by stage()
+
+			job("coverageSimple", stage = test) {
+				script { shell("echo Code coverage: 99%") }
+				coverage("""Code coverage: \d+(?:\.\d+)?""")
+			}
+		}
+
+		val yaml = pipeline.toYaml().toYamlString()
+		assertEqualsFile("coverage.gitlab-ci.yml", yaml)
+	}
 
 	test("Test dast_configuration functionality") {
 		val pipeline = gitlabCi {
