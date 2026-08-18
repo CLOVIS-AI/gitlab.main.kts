@@ -2,7 +2,7 @@
 template: home.html
 ---
 
-# Welcome!
+# GitLab CI: Replace YAML by Kotlin
 
 Authoring complex GitLab CI builds is often made more complicated by the need to express them in Yaml.
 Instead, this project aims to create GitLab CI pipelines from [Kotlin](https://kotlinlang.org/).
@@ -12,7 +12,7 @@ By using an actual programming language, we gain:
 - Better autocompletion and IDE support,
 - Code highlighting in embedded scripts using IntelliJ,
 - Support for abstractions like conditions, loops, functions and higher-order functions,
-- Built-in [plugins](api/-git-lab%20-c-i%20-kotlin%20-d-s-l/opensavvy.gitlab.ci.plugins/index.md) to make configuration easier,
+- Built-in [plugins](api/gitlab-ci-kotlin/opensavvy.gitlab.ci.plugins/index.md) to make configuration easier,
 - Versioning: we (the maintainers) can deprecate and remove behavior without breaking your builds.
 
 ## Why?
@@ -68,16 +68,16 @@ gitlabCi {
 }.println()
 ```
 
-1. Declare a CI stage. [Learn more](api/-git-lab%20-c-i%20-kotlin%20-d-s-l/opensavvy.gitlab.ci/stage.md).
-2. Declare a new job in that stage. [Learn more](api/-git-lab%20-c-i%20-kotlin%20-d-s-l/opensavvy.gitlab.ci/job.md).
-3. Use plugins to easily configure Docker, Gradle, Helm and more. [Learn more](api/-git-lab%20-c-i%20-kotlin%20-d-s-l/opensavvy.gitlab.ci.plugins/index.md).
-4. Easily and type-safely use the CI environment to conditionally create the pipeline. [Learn more](api/-git-lab%20-c-i%20-kotlin%20-d-s-l/opensavvy.gitlab.ci/-value).
+1. Declare a CI stage. [Learn more](api/gitlab-ci-kotlin/opensavvy.gitlab.ci/-git-lab-ci/index.md#stage).
+2. Declare a new job in that stage. [Learn more](api/gitlab-ci-kotlin/opensavvy.gitlab.ci/-git-lab-ci/index.md#job).
+3. Use plugins to easily configure Docker, Gradle, Helm and more. [Learn more](api/gitlab-ci-kotlin/opensavvy.gitlab.ci.plugins/index.md).
+4. Easily and type-safely use the CI environment to conditionally create the pipeline. [Learn more](api/gitlab-ci-kotlin/opensavvy.gitlab.ci/-value).
 5. Use regular `if`, `for`, `while` constructs or any other Kotlin functions—no need to learn about `extends`, `!reference` or anchors.
 
 ## Where do I start?
 
 - [**Setting up a project**](tutorials/index.md)
-- [**Start authoring pipelines**](api/-git-lab%20-c-i%20-kotlin%20-d-s-l/opensavvy.gitlab.ci/index.md)
-- [**Learn more about plugins**](api/-git-lab%20-c-i%20-kotlin%20-d-s-l/opensavvy.gitlab.ci.plugins/index.md)
+- [**Start authoring pipelines**](api/gitlab-ci-kotlin/opensavvy.gitlab.ci/index.md)
+- [**Learn more about plugins**](api/gitlab-ci-kotlin/opensavvy.gitlab.ci.plugins/index.md)
 
 Don't hesitate to [star](https://gitlab.com/opensavvy/automation/gitlab-ci.kt) and share the project ❤️
